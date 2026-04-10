@@ -9,8 +9,6 @@
     :root {
       --green: #00ff41;
       --dark: #000000;
-      --carbon: #0a0a0a;
-      --gray: #1a1a1a;
       --text: #cccccc;
     }
 
@@ -23,7 +21,6 @@
       overflow-x: hidden;
     }
 
-    /* HERO SECTION */
     .hero {
       position: relative;
       height: 100vh;
@@ -36,7 +33,6 @@
     .hero-bg {
       position: absolute;
       inset: 0;
-      /* Dégradé ajusté pour laisser passer l'échelle verte à droite */
       background: 
         linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%),
         url('DOG_MORPH_HD.jpg') center/cover no-repeat;
@@ -65,7 +61,7 @@
 
     .hero-content {
       position: relative;
-      z-index: 5;
+      z-index: 10; /* Augmenté pour être certain que le contenu est au premier plan */
       display: grid;
       grid-template-columns: 1fr 1fr;
       width: 100%;
@@ -125,19 +121,30 @@
       text-transform: uppercase;
     }
 
-    .hero-cta { display: flex; gap: 16px; margin-top: 20px; }
+    .hero-cta { 
+      display: flex; 
+      gap: 16px; 
+      margin-top: 20px; 
+      position: relative; 
+      z-index: 20; /* Priorité maximale pour les boutons */
+    }
 
-    .btn-primary {
-      background: var(--green);
-      color: #000;
+    .btn-primary, .btn-secondary {
       padding: 14px 32px;
       font-family: 'Bebas Neue', sans-serif;
       font-size: 18px;
       text-decoration: none;
-      font-weight: bold;
       letter-spacing: 1px;
-      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
       transition: 0.3s;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: #000;
+      font-weight: bold;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
     }
 
     .btn-primary:hover { background: white; }
@@ -145,12 +152,7 @@
     .btn-secondary {
       border: 1px solid #444;
       color: #fff;
-      padding: 14px 32px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 18px;
-      text-decoration: none;
-      letter-spacing: 1px;
-      transition: 0.3s;
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .btn-secondary:hover { border-color: var(--green); color: var(--green); }
