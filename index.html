@@ -51,6 +51,9 @@
     .viewer-corner.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--green); border-left: 2px solid var(--green); }
     .viewer-corner.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--green); border-right: 2px solid var(--green); }
     .viewer-label { position: absolute; top: 12px; left: 16px; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--green); letter-spacing: 2px; z-index: 3; }
+    .remote-img { margin-top: 40px; }
+    .remote-img img { width: 100%; max-width: 380px; display: block; border: 1px solid #1a1a1a; }
+    .remote-img p { margin-top: 10px; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #444; letter-spacing: 2px; text-transform: uppercase; }
 
     .features-section { padding: 100px 60px; border-top: 1px solid #111; max-width: 1400px; margin: 0 auto; }
     .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #111; }
@@ -131,7 +134,10 @@
       <h2 class="section-title">EXPLORE THE ARCHITECTURE</h2>
       <p class="section-body">The DOG MORPH is built on the Unitree B2-W quadruped platform — 16 degrees of freedom, active leveling via 12-DOF legs, and hub motors replacing the standard feet.</p>
       <a href="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom" target="_blank" class="btn-green">Open Full 3D Viewer</a>
-      <a href="https://robosynx.com/visualize/..." target="_blank" class="btn-green">Open Full 3D Viewer</a>
+      <div class="remote-img">
+        <img src="axisctrl_remote.png" alt="AxisCtrl Mobile Remote" />
+        <p>// AxisCtrl Mobile Remote — Electric Friends AS</p>
+      </div>
     </div>
     <div class="viewer-frame">
       <div class="viewer-corner tl"></div><div class="viewer-corner tr"></div>
