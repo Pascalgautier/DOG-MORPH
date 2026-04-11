@@ -1,3 +1,6 @@
+Voici le code complet à coller directement dans GitHub :
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,11 +22,11 @@
     .hero-left { display: flex; flex-direction: column; gap: 24px; max-width: 600px; }
     .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(80px, 10vw, 140px); line-height: 0.9; color: white; letter-spacing: -2px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s; }
     .hero-title span { color: var(--green); display: block; }
-    .hero-sub { font-size: 16px; font-weight: 600; color: #dddddd; line-height: 1.6; max-width: 400px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s; }
+    .hero-sub { font-size: clamp(13px, 2vw, 16px); font-weight: 600; color: #dddddd; line-height: 1.6; max-width: 400px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s; }
     .hero-stats { display: flex; gap: 32px; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s; }
     .stat { display: flex; flex-direction: column; gap: 4px; }
-    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--green); line-height: 1; }
-    .stat-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #555; letter-spacing: 2px; text-transform: uppercase; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: clamp(20px, 4vw, 36px); color: var(--green); line-height: 1; }
+    .stat-label { font-family: 'Share Tech Mono', monospace; font-size: clamp(8px, 1.5vw, 10px); color: #555; letter-spacing: 2px; text-transform: uppercase; }
     .corner-tag { position: absolute; bottom: 40px; right: 60px; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #555; letter-spacing: 3px; z-index: 10; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .glow-line { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--green), transparent); opacity: 0.3; }
@@ -68,10 +71,13 @@
 
     @media (max-width: 768px) {
       .hero-top-tag { left: 20px; top: 20px; font-size: 9px; letter-spacing: 2px; }
-      .hero-content { padding: 0 20px 80px; }
-      .hero-left { max-width: 100%; }
-      .hero-title { letter-spacing: 2px; }
+      .hero-content { padding: 0 20px 60px; }
+      .hero-left { max-width: 100%; gap: 16px; }
+      .hero-title { letter-spacing: 1px; }
       .corner-tag { display: none; }
+      .hero-stats { gap: 16px; }
+      .stat-value { font-size: 20px; }
+      .stat-label { font-size: 8px; letter-spacing: 1px; }
       .specs-bar { padding: 16px 20px; }
       .spec-item { padding: 0 16px; }
       .viewer-section { grid-template-columns: 1fr; padding: 60px 20px 0; gap: 40px; }
@@ -85,6 +91,8 @@
       .footer-info { text-align: left; }
     }
     @media (max-width: 480px) {
+      .hero-stats { gap: 12px; }
+      .stat-value { font-size: 18px; }
       .features-grid { grid-template-columns: 1fr; }
     }
   </style>
@@ -115,7 +123,7 @@
   <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">UNITREE B2-W CHASSIS</span></div>
   <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">BEGODE MTEN4 HUB MOTORS</span></div>
   <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">VESC 6 MKVI FOC</span></div>
-  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">SHOTOVER G1 GIMBAL</span></div>
+  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">MO-SYS L20 PAN/TILT</span></div>
   <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">ROS2 + SDK2</span></div>
   <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">AXISCTRL INTEGRATION</span></div>
 </div>
@@ -154,8 +162,9 @@
 
 <footer>
   <div class="footer-brand">DOG MORPH</div>
-  <div class="footer-info">PASCAL GAUTIER — PASCAL ROBOTICS<br>FRANCE REPRESENTATIVE, ELECTRIC FRIENDS AS<br>gautier.pascal@gmail.com</div>
+  <div class="footer-info">PASCAL GAUTIER — PASCAL ROBOTICS<br>FRANCE REPRESENTATIVE, ELECTRIC FRIENDS AS<br><a href="mailto:gautier.pascal@gmail.com" style="color:#888888;text-decoration:none;">gautier.pascal@gmail.com</a></div>
 </footer>
 
 </body>
 </html>
+```
