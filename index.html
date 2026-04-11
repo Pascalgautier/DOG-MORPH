@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +12,7 @@
     body { background: var(--dark); color: var(--text); font-family: 'Rajdhani', sans-serif; overflow-x: hidden; }
 
     .hero { position: relative; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; overflow: hidden; padding-top: 80px; }
-.hero-bg { position: absolute; inset: 0; background: url('DOG_MORPH_HD.jpg') center/cover no-repeat; z-index: 1; }
+    .hero-bg { position: absolute; inset: 0; background: url('DOG_MORPH_HD.jpg') center/cover no-repeat; z-index: 1; }
     .scan-line { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.015) 2px, rgba(0,255,65,0.015) 4px); pointer-events: none; animation: scan 8s linear infinite; z-index: 3; }
     @keyframes scan { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
     .hero-top-tag { position: absolute; top: 32px; left: 60px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--green); letter-spacing: 4px; text-transform: uppercase; z-index: 10; }
@@ -67,7 +68,6 @@
     .footer-info { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #333; letter-spacing: 2px; text-align: right; line-height: 1.8; }
 
     @media (max-width: 768px) {
-      .hero-bg { background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 100%), url('https://pascalgautier.github.io/DOG-MORPH/image_0.png') center/cover no-repeat; }
       .hero-top-tag { left: 20px; top: 20px; font-size: 9px; letter-spacing: 2px; }
       .hero-content { padding: 0 20px 80px; }
       .hero-left { max-width: 100%; }
@@ -128,4 +128,35 @@
       <p class="section-body">The DOG MORPH is built on the Unitree B2-W quadruped platform — 16 degrees of freedom, active leveling via 12-DOF legs, and hub motors replacing the standard feet.</p>
       <a href="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom" target="_blank" class="btn-green">Open Full 3D Viewer</a>
       <div class="remote-img">
-        <img
+        <img src="axisctrl_remote.png" alt="AxisCtrl Mobile Remote" />
+        <p>// AxisCtrl Mobile Remote — Electric Friends AS</p>
+      </div>
+    </div>
+    <div class="viewer-frame">
+      <div class="viewer-corner tl"></div><div class="viewer-corner tr"></div>
+      <div class="viewer-corner bl"></div><div class="viewer-corner br"></div>
+      <div class="viewer-label">B2W_DESCRIPTION.URDF — LIVE</div>
+      <iframe src="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom&embed=1" title="DOG MORPH 3D Viewer" width="100%" height="420" style="border:none;display:block;" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="features-section">
+  <div class="features-grid">
+    <div class="feature-card"><div class="feature-number">01</div><div class="feature-title">Studio Mode</div><div class="feature-body">Direct wheel traction, horizontal body, absolute silence below 45 dB(A). Designed for live TV floors where noise is unacceptable.</div><span class="feature-tag">// VESC FOC SILENT DRIVE</span></div>
+    <div class="feature-card"><div class="feature-number">02</div><div class="feature-title">Pendular Carving</div><div class="feature-body">Dynamic balance mode with organic body tilt — cinematic aesthetic for concert stages and immersive broadcast productions.</div><span class="feature-tag">// GYROSCOPIC BALANCE</span></div>
+    <div class="feature-card"><div class="feature-number">03</div><div class="feature-title">Active Leveling</div><div class="feature-body">12-DOF legs compensate low-frequency terrain variation in real time. The camera stays horizon-locked regardless of floor irregularities.</div><span class="feature-tag">// IMU + LEG COMPENSATION</span></div>
+    <div class="feature-card"><div class="feature-number">04</div><div class="feature-title">25° Ramp Capable</div><div class="feature-body">Designed to navigate concert stage ramps and multi-level broadcast sets. Hub motors deliver torque where traditional wheels fail.</div><span class="feature-tag">// ALL-TERRAIN MOBILITY</span></div>
+    <div class="feature-card"><div class="feature-number">05</div><div class="feature-title">AxisCtrl Ready</div><div class="feature-body">Native integration with Electric Friends AxisCtrl software — the broadcast robotics control platform deployed at France Télévisions.</div><span class="feature-tag">// BROADCAST ECOSYSTEM</span></div>
+    <div class="feature-card"><div class="feature-number">06</div><div class="feature-title">IP Protected</div><div class="feature-body">Concept protected by Soleau envelope filed with INPI on February 9, 2026. Developed by Pascal Gautier — creator of ARCAM, acquired by EVS.</div><span class="feature-tag">// INPI SOLEAU 09.02.2026</span></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">DOG MORPH</div>
+  <div class="footer-info">PASCAL GAUTIER — PASCAL ROBOTICS<br>FRANCE REPRESENTATIVE, ELECTRIC FRIENDS AS<br>gautier.pascal@gmail.com</div>
+</footer>
+
+</body>
+</html>
+```
