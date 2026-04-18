@@ -613,7 +613,7 @@
           active leveling via 12-DOF legs, and hub motors replacing the standard feet.
         </p>
 
-        <a
+        
           href="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom"
           target="_blank"
           rel="noopener noreferrer"
@@ -721,306 +721,425 @@
   </footer>
 
   <script>
-    const canvas = document.getElementById('rc');
-    const ctx = canvas.getContext('2d');
+    (function () {
+      const canvas = document.getElementById('rc');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
 
-    let dpr = Math.max(1, window.devicePixelRatio || 1);
-    let t = 0;
-    let mouse = { x: 0.5, y: 0.5, active: false };
+      let dpr = Math.max(1, window.devicePixelRatio || 1);
+      let t = 0;
+      const mouse = { x: 0.5, y: 0.5, active: false };
 
-    function resizeCanvas() {
-      const rect = canvas.getBoundingClientRect();
-      dpr = Math.max(1, window.devicePixelRatio || 1);
-      canvas.width = Math.floor(rect.width * dpr);
-      canvas.height = Math.floor(rect.height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
+      function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        dpr = Math.max(1, window.devicePixelRatio || 1);
+        canvas.width = Math.floor(rect.width * dpr);
+        canvas.height = Math.floor(rect.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
 
-    function roundedRect(x, y, w, h, r) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
-    }
-
-    function line(x1, y1, x2, y2, color, alpha = 1, width = 1) {
-      ctx.save();
-      ctx.strokeStyle = color;
-      ctx.globalAlpha = alpha;
-      ctx.lineWidth = width;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function text(txt, x, y, size = 12, color = '#00ff41', align = 'left', alpha = 1) {
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = color;
-      ctx.font = `${size}px "Share Tech Mono", monospace`;
-      ctx.textAlign = align;
-      ctx.fillText(txt, x, y);
-      ctx.restore();
-    }
-
-    function drawGrid(w, h) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(0,255,65,0.08)';
-      ctx.lineWidth = 1;
-
-      for (let x = 0; x < w; x += 28) {
+      function roundedRect(x, y, w, h, r) {
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        ctx.stroke();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
       }
 
-      for (let y = 0; y < h; y += 28) {
+      function line(x1, y1, x2, y2, color, alpha, width) {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = alpha == null ? 1 : alpha;
+        ctx.lineWidth = width || 1;
         ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
         ctx.stroke();
+        ctx.restore();
       }
-      ctx.restore();
-    }
 
-    function drawRemote() {
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-
-      ctx.clearRect(0, 0, w, h);
-
-      const grad = ctx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1, '#020202');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-
-      drawGrid(w, h);
-
-      ctx.save();
-      ctx.globalAlpha = 0.04;
-      for (let i = 0; i < h; i += 4) {
-        ctx.fillStyle = '#00ff41';
-        ctx.fillRect(0, i, w, 1);
+      function text(txt, x, y, size, color, align, alpha) {
+        ctx.save();
+        ctx.globalAlpha = alpha == null ? 1 : alpha;
+        ctx.fillStyle = color || '#00ff41';
+        ctx.font = (size || 12) + 'px "Share Tech Mono", monospace';
+        ctx.textAlign = align || 'left';
+        ctx.fillText(txt, x, y);
+        ctx.restore();
       }
-      ctx.restore();
 
-      text('// AXISCTRL REMOTE', 18, 22, 11);
-      text('DOG MORPH LIVE CONTROL', w - 18, 22, 11, '#00ff41', 'right', 0.9);
+      function drawGrid(w, h) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0,255,65,0.08)';
+        ctx.lineWidth = 1;
 
-      line(18, 32, w - 18, 32, '#00ff41', 0.22, 1);
-
-      const panelPad = 18;
-      const leftW = Math.min(260, w * 0.32);
-      const rightW = Math.min(240, w * 0.28);
-      const centerW = w - leftW - rightW - panelPad * 4;
-
-      const topY = 52;
-      const panelH = h - 86;
-
-      const leftX = panelPad;
-      const centerX = leftX + leftW + panelPad;
-      const rightX = centerX + centerW + panelPad;
+        for (let x = 0; x < w; x += 28) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, h);
+          ctx.stroke();
+        }
+        for (let y = 0; y < h; y += 28) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(w, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
 
       function panel(x, y, pw, ph, title) {
         ctx.save();
         roundedRect(x, y, pw, ph, 12);
-        ctx.fillStyle = 'rgba( h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(155,65,0.18)';
+        ctx.fillStyle = 'rgba(0,255,65,0.02)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,255,65,0.18)';
         ctx.lineWidth = 1;
         ctx.stroke();
-        text(title, x + 12, y + 18, 10, '#00ff41');
-        line(x + h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1.addColorStop(10a0a0a');
-      grad.addColorStop(1      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1anelH, 'CAMERA / STATU h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1rad.addColorStop(1p(0, '#0a0a0a');
-      grad.addColorStop(1a');
-      grad.addColorStop(1a');
-      grad.addColorStop(1
-      grad.addColorStop(1p(0, '#0a0a0a');
-      grad.addColorStop(1a');
-      grad.addColorStop(1h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1 grad.addColorStop(1olorStop(0, '#0a0a0a');
-      grad.addColorStop(1   grad.addColorStop(1top(0, '#0a0a0a');
-      grad.addColorStop(1.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1lorStop(1oke();
+        ctx.restore();
 
+        text(title, x + 12, y + 18, 10, '#00ff41', 'left', 0.9);
+        line(x + 12, y + 26, x + pw - 12, y + 26, '#00ff41', 0.12, 1);
+      }
+
+      function joystick(cx, cy, r, dx, dy, label) {
+        // Outer ring
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0,255,65,0.22)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+
+        // Inner cross
         line(cx - r, cy, cx + r, cy, '#00ff41', 0.12, 1);
         line(cx, cy - r, cx, cy + r, '#00ff41', 0.12, 1);
 
-        c h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1ddColorStop(1dColorStop(0, '#0a0a0a');
-      grad.addColorStop(1    grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1(0, '#0a0a0a');
-      grad.addColorStop(1 = 'rgba(0,255,65,0.7 h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1 h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1addColorStop(1a0a');
-      grad.addColorStop(1.7 : Math.sin(t * 0.0015) * 0 h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1orStop(0, '#0a0a0a');
-      grad.addColorStop(1 joyY, joyR, driftX, d h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(18, driftX * 0.85,  h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1{
-        h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1llS h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1st fill = Math.max(0, Math. h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1     grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1    grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(10, '#0a0a0a');
-      grad.addColorStop(1
-      grad.addColorStop(1#8affb0', 'r h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1orStop(0, '#0a0a0a');
-      grad.addColorStop(1addColorStop(1pY + pane h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1);
-      grad.addColorStop(1in(t * 0.0012 + 1.8) * 0.08,
-        0.88 + Math.cos(t * 0.0014 + 0.5) * 0.04
-      ];
+        // Inner circle
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0,255,65,0.12)';
+        ctx.stroke();
+        ctx.restore();
 
-      meter(meterX, meterY0, meterW, 14, vals h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1rad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1, meterW, 14, vals[2], 'LINK STABI h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1   grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1re h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(10a0a');
-      grad.addColorStop(1tyle = 'rgba( h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1;
-      grad.addColorStop(1);
+        // Stick position
+        const px = cx + dx;
+        const py = cy + dy;
 
-      line h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1viewY + previewH  h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1e h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1lorStop(0, '#0a0a0a');
-      grad.addColorStop(1.sin(t * 0.0 h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1eviewY + previewH / 2, 18 + p h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1top(0, '#0a0a0a');
-      grad.addColorStop(1addColorStop(1lorStop(0, '#0a0a0a');
-      grad.addColorStop(1');
-      grad.addColorStop(1ad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1text(' h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1    grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1rad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1   grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1a');
-      grad.addColorStop(1ddColorStop(1op(0, '#0a0a0a');
-      grad.addColorStop(1p(0, '#0a0a0a');
-      grad.addColorStop(10, '#0a0a0a');
-      grad.addColorStop(1);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1     grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1, '#0a0a0a');
-      grad.addColorStop(1a');
-      grad.addColorStop(1phY + g h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1    grad.addColorStop(1.15, h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1lorStop(0, '#0a0a0a');
-      grad.addColorStop(1(0, '#0a0a0a');
-      grad.addColorStop(1ad.addColorStop(1p(0, '#0a0a0a');
-      grad.addColorStop(1');
-      grad.addColorStop(1se ctx. h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1a0a0a');
-      grad.addColorStop(1x.stroke();
+        // Glow
+        ctx.save();
+        const g = ctx.createRadialGradient(px, py, 0, px, py, 18);
+        g.addColorStop(0, 'rgba(0,255,65,0.65)');
+        g.addColorStop(1, 'rgba(0,255,65,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(px, py, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
 
-      text h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1lorStop(0, '#0a0a0a');
-      grad.addColorStop(1ddColorStop(1grad.addColorStop(1d.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(16, y h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1   grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1
-      grad.addColorStop(1op(0, '#0a0a0a');
-      grad.addColorStop(1ddColorStop(1;
-      grad.addColorStop(1    grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1.addColorStop(1p(0, '#0a0a0a');
-      grad.addColorStop(1US h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1radarCy = h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(18);
+        // Stick knob
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(px, py, 7, 0, Math.PI * 2);
+        ctx.fillStyle = '#00ff41';
+        ctx.fill();
+        ctx.restore();
 
-      for (let h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1d.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1rad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1oke( h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1adarCy, '#00ff41', 0.12, h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1  grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1 + Math.sin(sweep) * r h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1idth = 2;
-      ctx.stroke();
+        text(label, cx, cy + r + 16, 9, '#888', 'center', 0.9);
+      }
 
-      ctx.beginPath();
-      h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(10, '#0a0a0a');
-      grad.addColorStop(1   grad.addColorStop(1olorStop(0, '#0a0a0a');
-      grad.addColorStop(1 h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1  grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1top(0, '#0a0a0a');
-      grad.addColorStop(1tionFrame(drawRemote);
-    }
+      function meter(x, y, w, h, fill, label) {
+        ctx.save();
+        roundedRect(x, y, w, h, 3);
+        ctx.fillStyle = 'rgba(0,255,65,0.05)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,255,65,0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
 
-    function onPointerMove( h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1 = (e.clientX -  h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1t.height;
-      mouse.active =  h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1ddColorStop(0, '#0a0a0a');
-      grad.addColorStop(1izeCa h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1 canvas.addEventListener('pointerleave', onPointerLeave);
+        const ff = Math.max(0, Math.min(1, fill));
+        ctx.save();
+        roundedRect(x + 1, y + 1, (w - 2) * ff, h - 2, 2);
+        const g = ctx.createLinearGradient(x, y, x + w, y);
+        g.addColorStop(0, 'rgba(0,255,65,0.25)');
+        g.addColorStop(1, 'rgba(0,255,65,0.85)');
+        ctx.fillStyle = g;
+        ctx.fill();
+        ctx.restore();
 
-    re h);
-      grad.addColorStop(0, '#0a0a0a');
-      grad.addColorStop(1dy>
+        text(label, x, y - 4, 9, '#888', 'left', 0.85);
+        text(Math.round(ff * 100) + '%', x + w, y - 4, 9, '#00ff41', 'right', 0.9);
+      }
+
+      function drawPreview(x, y, w, h) {
+        ctx.save();
+        roundedRect(x, y, w, h, 6);
+        ctx.clip();
+
+        // Sky/floor gradient simulating studio lighting
+        const g = ctx.createLinearGradient(x, y, x, y + h);
+        g.addColorStop(0, '#0a1410');
+        g.addColorStop(0.6, '#050806');
+        g.addColorStop(1, '#000');
+        ctx.fillStyle = g;
+        ctx.fillRect(x, y, w, h);
+
+        // Horizon
+        const horizon = y + h * 0.55 + Math.sin(t * 0.001) * 3;
+        line(x, horizon, x + w, horizon, '#00ff41', 0.18, 1);
+
+        // Moving subject silhouette
+        const sx = x + w * 0.5 + Math.sin(t * 0.0008) * w * 0.25;
+        const sy = horizon - 14;
+        ctx.fillStyle = 'rgba(0,255,65,0.35)';
+        ctx.fillRect(sx - 4, sy - 14, 8, 18);
+        ctx.fillRect(sx - 8, sy + 4, 4, 8);
+        ctx.fillRect(sx + 4, sy + 4, 4, 8);
+
+        // Crosshair
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        line(cx - 10, cy, cx + 10, cy, '#00ff41', 0.6, 1);
+        line(cx, cy - 10, cx, cy + 10, '#00ff41', 0.6, 1);
+        ctx.save();
+        ctx.strokeStyle = '#00ff41';
+        ctx.globalAlpha = 0.4;
+        ctx.strokeRect(cx - 18, cy - 12, 36, 24);
+        ctx.restore();
+
+        ctx.restore();
+
+        // Frame overlay
+        ctx.save();
+        roundedRect(x, y, w, h, 6);
+        ctx.strokeStyle = 'rgba(0,255,65,0.25)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+
+        text('CAM 01 — LIVE', x + 8, y + 14, 9, '#00ff41', 'left', 0.9);
+        text('REC ●', x + w - 8, y + 14, 9, '#ff3344', 'right', 0.9 + Math.sin(t * 0.01) * 0.1);
+      }
+
+      function drawRadar(cx, cy, r) {
+        // Concentric rings
+        for (let i = 1; i <= 3; i++) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, (r / 3) * i, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(0,255,65,0.15)';
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Cross
+        line(cx - r, cy, cx + r, cy, '#00ff41', 0.15, 1);
+        line(cx, cy - r, cx, cy + r, '#00ff41', 0.15, 1);
+
+        // Sweep
+        const sweep = (t * 0.002) % (Math.PI * 2);
+        ctx.save();
+        const sg = ctx.createConicGradient
+          ? ctx.createConicGradient(sweep, cx, cy)
+          : null;
+        if (sg) {
+          sg.addColorStop(0, 'rgba(0,255,65,0.5)');
+          sg.addColorStop(0.1, 'rgba(0,255,65,0)');
+          sg.addColorStop(1, 'rgba(0,255,65,0)');
+          ctx.fillStyle = sg;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = 'rgba(0,255,65,0.6)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(cx + Math.cos(sweep) * r, cy + Math.sin(sweep) * r);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // Blips
+        const blips = [
+          { a: 0.6, d: 0.55 },
+          { a: 2.2, d: 0.8 },
+          { a: 4.1, d: 0.35 }
+        ];
+        for (const b of blips) {
+          const bx = cx + Math.cos(b.a) * r * b.d;
+          const by = cy + Math.sin(b.a) * r * b.d;
+          const pulse = (Math.sin(t * 0.004 + b.a) + 1) * 0.5;
+          ctx.save();
+          ctx.fillStyle = 'rgba(0,255,65,' + (0.4 + pulse * 0.5) + ')';
+          ctx.beginPath();
+          ctx.arc(bx, by, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function drawRemote() {
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+
+        // Background
+        ctx.clearRect(0, 0, w, h);
+        const bg = ctx.createLinearGradient(0, 0, 0, h);
+        bg.addColorStop(0, '#0a0a0a');
+        bg.addColorStop(1, '#020202');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
+
+        drawGrid(w, h);
+
+        // Scanlines
+        ctx.save();
+        ctx.globalAlpha = 0.04;
+        ctx.fillStyle = '#00ff41';
+        for (let i = 0; i < h; i += 4) {
+          ctx.fillRect(0, i, w, 1);
+        }
+        ctx.restore();
+
+        // Header
+        text('// AXISCTRL REMOTE', 18, 22, 11, '#00ff41', 'left', 0.95);
+        text('DOG MORPH LIVE CONTROL', w - 18, 22, 11, '#00ff41', 'right', 0.9);
+        line(18, 32, w - 18, 32, '#00ff41', 0.22, 1);
+
+        // Layout
+        const pad = 14;
+        const topY = 46;
+        const panelH = h - topY - 28;
+
+        // Proportional columns
+        const leftW = Math.max(180, Math.min(260, w * 0.3));
+        const rightW = Math.max(160, Math.min(220, w * 0.26));
+        const centerW = w - leftW - rightW - pad * 4;
+
+        const leftX = pad;
+        const centerX = leftX + leftW + pad;
+        const rightX = centerX + centerW + pad;
+
+        // --- LEFT: Motion joystick ---
+        panel(leftX, topY, leftW, panelH, 'MOTION / DRIVE');
+
+        const joyCX = leftX + leftW / 2;
+        const joyCY = topY + 28 + (panelH - 28) * 0.35;
+        const joyR = Math.min(leftW, panelH) * 0.28;
+
+        // Joystick position: mouse-driven if active, else auto
+        let dx, dy;
+        if (mouse.active) {
+          dx = (mouse.x - 0.5) * 2 * joyR * 0.7;
+          dy = (mouse.y - 0.5) * 2 * joyR * 0.7;
+        } else {
+          dx = Math.sin(t * 0.0012) * joyR * 0.45;
+          dy = Math.cos(t * 0.0015) * joyR * 0.45;
+        }
+        joystick(joyCX, joyCY, joyR, dx, dy, 'VX / VY');
+
+        // Mode toggles under joystick
+        const modes = ['STUDIO', 'CARVING', 'STAND'];
+        const active = Math.floor((t * 0.0005) % 3);
+        const modeY = joyCY + joyR + 36;
+        const modeW = (leftW - 24 - 8 * (modes.length - 1)) / modes.length;
+        for (let i = 0; i < modes.length; i++) {
+          const mx = leftX + 12 + i * (modeW + 8);
+          const on = i === active;
+          ctx.save();
+          roundedRect(mx, modeY, modeW, 22, 4);
+          ctx.fillStyle = on ? 'rgba(0,255,65,0.18)' : 'rgba(0,255,65,0.03)';
+          ctx.fill();
+          ctx.strokeStyle = on ? 'rgba(0,255,65,0.7)' : 'rgba(0,255,65,0.18)';
+          ctx.stroke();
+          ctx.restore();
+          text(modes[i], mx + modeW / 2, modeY + 15, 10, on ? '#00ff41' : '#888', 'center', 1);
+        }
+
+        // --- CENTER: Camera preview + meters ---
+        panel(centerX, topY, centerW, panelH, 'CAMERA / PREVIEW');
+
+        const previewX = centerX + 12;
+        const previewY = topY + 36;
+        const previewW = centerW - 24;
+        const previewH = Math.min(180, panelH * 0.5);
+        drawPreview(previewX, previewY, previewW, previewH);
+
+        // Meters below preview
+        const meterX = previewX;
+        const meterW = previewW;
+        let meterY = previewY + previewH + 18;
+        const vals = [
+          0.72 + Math.sin(t * 0.0011) * 0.08,
+          0.55 + Math.cos(t * 0.0013) * 0.1,
+          0.88 + Math.sin(t * 0.0017 + 1) * 0.05
+        ];
+        meter(meterX, meterY, meterW, 10, vals[0], 'PAN / TILT LOAD');
+        meterY += 28;
+        meter(meterX, meterY, meterW, 10, vals[1], 'IRIS / ZOOM');
+        meterY += 28;
+        meter(meterX, meterY, meterW, 10, vals[2], 'LINK STABILITY');
+
+        // --- RIGHT: Radar + status ---
+        panel(rightX, topY, rightW, panelH, 'SPATIAL / STATUS');
+
+        const radarR = Math.min(rightW, panelH * 0.6) * 0.38;
+        const radarCX = rightX + rightW / 2;
+        const radarCY = topY + 36 + radarR + 6;
+        drawRadar(radarCX, radarCY, radarR);
+
+        // Status lines
+        const statusLines = [
+          ['BATTERY', Math.round(82 + Math.sin(t * 0.0005) * 2) + '%'],
+          ['LATENCY', Math.round(12 + Math.sin(t * 0.002) * 4) + ' MS'],
+          ['NOISE', Math.round(42 + Math.sin(t * 0.0012) * 2) + ' DB(A)'],
+          ['LINK', 'OK']
+        ];
+        let sy = radarCY + radarR + 24;
+        for (const row of statusLines) {
+          text(row[0], rightX + 14, sy, 9, '#888', 'left', 0.9);
+          text(row[1], rightX + rightW - 14, sy, 10, '#00ff41', 'right', 1);
+          sy += 18;
+        }
+
+        // Footer tag
+        text('SOLEAU 09.02.2026', 18, h - 10, 9, '#444', 'left', 0.9);
+        const blink = 0.6 + Math.sin(t * 0.006) * 0.4;
+        text('● LIVE', w - 18, h - 10, 10, '#00ff41', 'right', blink);
+
+        t += 16;
+        requestAnimationFrame(drawRemote);
+      }
+
+      function onPointerMove(e) {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = (e.clientX - rect.left) / rect.width;
+        mouse.y = (e.clientY - rect.top) / rect.height;
+        mouse.active = true;
+      }
+
+      function onPointerLeave() {
+        mouse.active = false;
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+      canvas.addEventListener('pointermove', onPointerMove);
+      canvas.addEventListener('pointerleave', onPointerLeave);
+
+      resizeCanvas();
+      requestAnimationFrame(drawRemote);
+    })();
+  </script>
+
+</body>
 </html>
