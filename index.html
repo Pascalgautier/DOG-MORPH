@@ -1,476 +1,1221 @@
-<script>
-    window.addEventListener('load', function () {
-      const canvas = document.getElementById('rc');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOG MORPH — Broadcast Quadruped Robot</title>
 
-      let dpr = Math.max(1, window.devicePixelRatio || 1);
-      let t = 0;
-      let W = 0, H = 0;
-      const mouse = { x: 0.5, y: 0.5, active: false };
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-      function resizeCanvas() {
-        const rect = canvas.getBoundingClientRect();
-        W = Math.max(1, rect.width);
-        H = Math.max(1, rect.height);
-        dpr = Math.max(1, window.devicePixelRatio || 1);
-        canvas.width = Math.floor(W * dpr);
-        canvas.height = Math.floor(H * dpr);
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  <style>
+    :root {
+      --green: #00ff41;
+      --green-soft: rgba(0,255,65,0.14);
+      --green-line: rgba(0,255,65,0.22);
+      --dark: #000000;
+      --dark-2: #050505;
+      --dark-3: #0b0b0b;
+      --text: #cccccc;
+      --muted: #888888;
+      --line: #161616;
+      --line-2: #1f1f1f;
+      --white: #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--dark);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow: hidden;
+      padding-top: 80px;
+      background: #000;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,0.28), rgba(0,0,0,0.72)),
+        url('DOG_MORPH_HD.jpg') center/cover no-repeat;
+      z-index: 1;
+    }
+
+    .scan-line {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,255,65,0.015) 2px,
+        rgba(0,255,65,0.015) 4px
+      );
+      pointer-events: none;
+      animation: scan 8s linear infinite;
+      z-index: 3;
+    }
+
+    @keyframes scan {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 100px; }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-top-tag {
+      position: absolute;
+      top: 32px;
+      left: 60px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--green);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      z-index: 10;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 1400px;
+      padding: 0 60px 80px;
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 620px;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(80px, 10vw, 140px);
+      line-height: 0.9;
+      color: white;
+      letter-spacing: -2px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.25s;
+    }
+
+    .hero-title span {
+      color: var(--green);
+      display: block;
+    }
+
+    .hero-sub {
+      font-size: 16px;
+      font-weight: 600;
+      color: #dddddd;
+      line-height: 1.65;
+      max-width: 430px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.45s;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.65s;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      color: var(--green);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: #555;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .corner-tag {
+      position: absolute;
+      bottom: 40px;
+      right: 60px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: #555;
+      letter-spacing: 3px;
+      z-index: 10;
+    }
+
+    .glow-line {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      opacity: 0.28;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #000;
+      padding: 14px 32px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 2px;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s ease, background 0.2s ease;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    }
+
+    .btn-green:hover {
+      background: white;
+      transform: translateY(-2px);
+    }
+
+    .specs-bar {
+      padding: 20px 60px;
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      background: #030303;
+      border-bottom: 1px solid #111;
+    }
+
+    .specs-bar::-webkit-scrollbar { display: none; }
+
+    .spec-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 32px;
+      border-right: 1px solid #1a1a1a;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .spec-item:first-child { padding-left: 0; }
+
+    .spec-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    .spec-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: #555;
+      letter-spacing: 1px;
+    }
+
+    .viewer-shell {
+      background: #030303;
+      border-bottom: 1px solid #111;
+    }
+
+    .viewer-section {
+      padding: 100px 60px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--green);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 5vw, 64px);
+      line-height: 0.95;
+      color: white;
+      margin-bottom: 24px;
+    }
+
+    .section-body {
+      font-size: 15px;
+      color: #888888;
+      line-height: 1.7;
+      margin-bottom: 32px;
+      max-width: 58ch;
+    }
+
+    .viewer-frame {
+      position: relative;
+      border: 1px solid #1a1a1a;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .viewer-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(0,255,65,0.1);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .viewer-corner {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      z-index: 3;
+    }
+
+    .viewer-corner.tl { top: -1px; left: -1px; border-top: 2px solid var(--green); border-left: 2px solid var(--green); }
+    .viewer-corner.tr { top: -1px; right: -1px; border-top: 2px solid var(--green); border-right: 2px solid var(--green); }
+    .viewer-corner.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--green); border-left: 2px solid var(--green); }
+    .viewer-corner.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--green); border-right: 2px solid var(--green); }
+
+    .viewer-label {
+      position: absolute;
+      top: 12px;
+      left: 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--green);
+      letter-spacing: 2px;
+      z-index: 3;
+    }
+
+    /* --- Remote row (canvas + 3D viewer side by side on PC) --- */
+    .rc-row {
+      margin-top: 24px;
+      display: flex;
+      gap: 16px;
+      width: 100%;
+      align-items: stretch;
+    }
+
+    .rc-box {
+      flex: 1 1 0;
+      min-width: 0;
+      border: 1px solid #1a1a1a;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, #080808, #020202);
+      box-shadow: inset 0 0 0 1px rgba(0,255,65,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .rc-box::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(0,255,65,0.03), transparent 28%),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0,255,65,0.022) 2px,
+          rgba(0,255,65,0.022) 4px
+        );
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .rc-box p.rc-caption {
+      margin: 0;
+      padding: 10px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: #888888;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-top: 1px solid #1a1a1a;
+      background: #040404;
+      position: relative;
+      z-index: 3;
+    }
+
+    #rc {
+      width: 100%;
+      height: 520px;
+      display: block;
+      cursor: grab;
+      background: transparent;
+      position: relative;
+      z-index: 1;
+      flex: 1 1 auto;
+    }
+
+    .rc-3d-frame {
+      width: 100%;
+      height: 520px;
+      border: none;
+      display: block;
+      background: #000;
+      position: relative;
+      z-index: 1;
+      flex: 1 1 auto;
+    }
+
+    .features-section {
+      padding: 0 60px 60px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #111;
+    }
+
+    .feature-card {
+      background: var(--dark);
+      padding: 40px;
+      transition: background 0.3s ease;
+    }
+
+    .feature-card:hover { background: #080808; }
+
+    .feature-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: #1a1a1a;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .feature-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      color: white;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .feature-body {
+      font-size: 14px;
+      color: #888888;
+      line-height: 1.6;
+    }
+
+    .feature-tag {
+      display: inline-block;
+      margin-top: 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--green);
+      letter-spacing: 2px;
+    }
+
+    footer {
+      border-top: 1px solid #111;
+      padding: 40px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      color: white;
+      letter-spacing: 3px;
+    }
+
+    .footer-info {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: #888888;
+      letter-spacing: 2px;
+      text-align: right;
+      line-height: 1.8;
+    }
+
+    .footer-info a {
+      color: #888888;
+      text-decoration: none;
+    }
+
+    .footer-info a:hover { color: white; }
+
+    @media screen and (max-width: 1024px) {
+      .viewer-section {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .hero-top-tag {
+        left: 20px;
+        top: 20px;
+        font-size: 9px;
+        letter-spacing: 2px;
       }
 
-      function roundedRect(x, y, w, h, r) {
-        r = Math.min(r, w / 2, h / 2);
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
+      .hero-content { padding: 0 20px 60px; }
+
+      .hero-left {
+        max-width: 100%;
+        gap: 16px;
       }
 
-      function line(x1, y1, x2, y2, color, alpha, width) {
-        ctx.save();
-        ctx.strokeStyle = color;
-        ctx.globalAlpha = alpha == null ? 1 : alpha;
-        ctx.lineWidth = width || 1;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-        ctx.restore();
+      .hero-title { letter-spacing: 1px; }
+
+      .corner-tag { display: none; }
+
+      .hero-sub { font-size: 13px; }
+
+      .hero-stats { gap: 14px; }
+
+      .stat-value { font-size: 18px; }
+
+      .stat-label {
+        font-size: 8px;
+        letter-spacing: 1px;
       }
 
-      function text(txt, x, y, size, color, align, alpha) {
-        ctx.save();
-        ctx.globalAlpha = alpha == null ? 1 : alpha;
-        ctx.fillStyle = color || '#00ff41';
-        ctx.font = (size || 12) + 'px "Share Tech Mono", monospace';
-        ctx.textAlign = align || 'left';
-        ctx.fillText(txt, x, y);
-        ctx.restore();
+      .specs-bar { padding: 16px 20px; }
+
+      .spec-item { padding: 0 16px; }
+
+      .viewer-section {
+        padding: 60px 20px 0;
+        gap: 40px;
       }
 
-      function drawGrid(w, h) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(0,255,65,0.07)';
-        ctx.lineWidth = 1;
-        for (let x = 0; x < w; x += 28) {
-          ctx.beginPath();
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, h);
-          ctx.stroke();
-        }
-        for (let y = 0; y < h; y += 28) {
-          ctx.beginPath();
-          ctx.moveTo(0, y);
-          ctx.lineTo(w, y);
-          ctx.stroke();
-        }
-        ctx.restore();
+      .viewer-frame iframe {
+        height: 280px;
       }
 
-      function panel(x, y, pw, ph, title) {
-        ctx.save();
-        roundedRect(x, y, pw, ph, 10);
-        ctx.fillStyle = 'rgba(0,255,65,0.025)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0,255,65,0.22)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.restore();
-
-        text(title, x + 10, y + 16, 10, '#00ff41', 'left', 0.95);
-        line(x + 10, y + 22, x + pw - 10, y + 22, '#00ff41', 0.15, 1);
+      /* --- Mobile: stack canvas and 3D viewer vertically --- */
+      .rc-row {
+        flex-direction: column;
+        gap: 12px;
       }
 
-      function joystick(cx, cy, r, dx, dy, label) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(0,255,65,0.3)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.restore();
+      #rc { height: 455px; }
+      .rc-3d-frame { height: 360px; }
 
-        line(cx - r, cy, cx + r, cy, '#00ff41', 0.15, 1);
-        line(cx, cy - r, cx, cy + r, '#00ff41', 0.15, 1);
+      .features-section { padding: 0 20px 40px; }
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(0,255,65,0.15)';
-        ctx.stroke();
-        ctx.restore();
+      .features-grid { grid-template-columns: 1fr 1fr; }
 
-        const px = cx + dx;
-        const py = cy + dy;
+      .feature-card { padding: 24px 16px; }
 
-        ctx.save();
-        const g = ctx.createRadialGradient(px, py, 0, px, py, 20);
-        g.addColorStop(0, 'rgba(0,255,65,0.7)');
-        g.addColorStop(1, 'rgba(0,255,65,0)');
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(px, py, 20, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
+      .feature-number { font-size: 32px; }
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(px, py, 7, 0, Math.PI * 2);
-        ctx.fillStyle = '#00ff41';
-        ctx.fill();
-        ctx.restore();
+      .feature-title { font-size: 20px; }
 
-        text(label, cx, cy + r + 16, 9, '#888', 'center', 0.9);
+      footer {
+        padding: 32px 20px;
+        flex-direction: column;
+        align-items: flex-start;
       }
 
-      function meter(x, y, w, h, fill, label) {
-        ctx.save();
-        roundedRect(x, y, w, h, 3);
-        ctx.fillStyle = 'rgba(0,255,65,0.06)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0,255,65,0.22)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.restore();
+      .footer-info { text-align: left; }
+    }
 
-        const ff = Math.max(0, Math.min(1, fill));
-        if (ff > 0) {
-          ctx.save();
-          roundedRect(x + 1, y + 1, Math.max(1, (w - 2) * ff), h - 2, 2);
-          const g = ctx.createLinearGradient(x, y, x + w, y);
-          g.addColorStop(0, 'rgba(0,255,65,0.3)');
-          g.addColorStop(1, 'rgba(0,255,65,0.9)');
-          ctx.fillStyle = g;
-          ctx.fill();
-          ctx.restore();
-        }
+    @media screen and (max-width: 480px) {
+      .hero-stats { gap: 12px; }
 
-        text(label, x, y - 4, 9, '#888', 'left', 0.85);
-        text(Math.round(ff * 100) + '%', x + w, y - 4, 9, '#00ff41', 'right', 0.9);
-      }
+      .stat-value { font-size: 16px; }
 
-      function drawPreview(x, y, w, h) {
-        ctx.save();
-        roundedRect(x, y, w, h, 6);
-        ctx.clip();
+      .stat-label { font-size: 7px; }
 
-        const g = ctx.createLinearGradient(x, y, x, y + h);
-        g.addColorStop(0, '#0a1410');
-        g.addColorStop(0.6, '#050806');
-        g.addColorStop(1, '#000');
-        ctx.fillStyle = g;
-        ctx.fillRect(x, y, w, h);
+      .features-grid { grid-template-columns: 1fr; }
 
-        const horizon = y + h * 0.55 + Math.sin(t * 0.001) * 3;
-        line(x, horizon, x + w, horizon, '#00ff41', 0.2, 1);
+      #rc { height: 380px; }
+      .rc-3d-frame { height: 320px; }
+    }
+  </style>
+</head>
+<body>
 
-        const sx = x + w * 0.5 + Math.sin(t * 0.0008) * w * 0.25;
-        const sy = horizon - 14;
-        ctx.fillStyle = 'rgba(0,255,65,0.4)';
-        ctx.fillRect(sx - 4, sy - 14, 8, 18);
-        ctx.fillRect(sx - 8, sy + 4, 4, 8);
-        ctx.fillRect(sx + 4, sy + 4, 4, 8);
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="scan-line"></div>
 
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        line(cx - 10, cy, cx + 10, cy, '#00ff41', 0.7, 1);
-        line(cx, cy - 10, cx, cy + 10, '#00ff41', 0.7, 1);
-        ctx.save();
-        ctx.strokeStyle = '#00ff41';
-        ctx.globalAlpha = 0.45;
-        ctx.strokeRect(cx - 18, cy - 12, 36, 24);
-        ctx.restore();
+    <div class="hero-top-tag">// Pascal Robotics — France // 2026</div>
 
-        ctx.restore();
+    <div class="hero-content">
+      <div class="hero-left">
+        <h1 class="hero-title">DOG<span>MORPH</span></h1>
+        <p class="hero-sub">
+          The world's first silent broadcast camera platform built on a quadruped robot.
+          Designed for live TV studios, concert stages, and beyond.
+        </p>
 
-        ctx.save();
-        roundedRect(x, y, w, h, 6);
-        ctx.strokeStyle = 'rgba(0,255,65,0.3)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.restore();
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-value">&lt;45</div>
+            <div class="stat-label">dB(A) Silent</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">25°</div>
+            <div class="stat-label">Ramp Climb</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">1.7m</div>
+            <div class="stat-label">Max Lens Height</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        text('CAM 01 — LIVE', x + 8, y + 14, 9, '#00ff41', 'left', 0.95);
-        text('REC ●', x + w - 8, y + 14, 9, '#ff3344', 'right', 0.7 + Math.sin(t * 0.01) * 0.3);
-      }
+    <div class="corner-tag">IP PROTECTED — INPI SOLEAU 09.02.2026</div>
+  </section>
 
-      function drawRadar(cx, cy, r) {
-        for (let i = 1; i <= 3; i++) {
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(cx, cy, (r / 3) * i, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(0,255,65,0.18)';
-          ctx.stroke();
-          ctx.restore();
-        }
-        line(cx - r, cy, cx + r, cy, '#00ff41', 0.18, 1);
-        line(cx, cy - r, cx, cy + r, '#00ff41', 0.18, 1);
+  <div class="glow-line"></div>
 
-        const sweep = (t * 0.002) % (Math.PI * 2);
-        ctx.save();
-        if (typeof ctx.createConicGradient === 'function') {
-          const sg = ctx.createConicGradient(sweep, cx, cy);
-          sg.addColorStop(0, 'rgba(0,255,65,0.5)');
-          sg.addColorStop(0.15, 'rgba(0,255,65,0)');
-          sg.addColorStop(1, 'rgba(0,255,65,0)');
-          ctx.fillStyle = sg;
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.strokeStyle = 'rgba(0,255,65,0.7)';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.lineTo(cx + Math.cos(sweep) * r, cy + Math.sin(sweep) * r);
-          ctx.stroke();
-        }
-        ctx.restore();
+  <div class="specs-bar">
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">UNITREE B2-W CHASSIS</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">BEGODE MTEN4 HUB MOTORS</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">VESC 6 MKVI FOC</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">MO-SYS L20 PAN/TILT</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">ROS2 + SDK2</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">AXISCTRL INTEGRATION</span></div>
+  </div>
 
-        const blips = [
-          { a: 0.6, d: 0.55 },
-          { a: 2.2, d: 0.8 },
-          { a: 4.1, d: 0.35 }
-        ];
-        for (const b of blips) {
-          const bx = cx + Math.cos(b.a) * r * b.d;
-          const by = cy + Math.sin(b.a) * r * b.d;
-          const pulse = (Math.sin(t * 0.004 + b.a) + 1) * 0.5;
-          ctx.save();
-          ctx.fillStyle = 'rgba(0,255,65,' + (0.4 + pulse * 0.5) + ')';
-          ctx.beginPath();
-          ctx.arc(bx, by, 3, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-      }
+  <div class="viewer-shell">
+    <div class="viewer-section">
+      <div>
+        <div class="section-label">// Interactive 3D Model</div>
+        <h2 class="section-title">EXPLORE THE ARCHITECTURE</h2>
+        <p class="section-body">
+          The DOG MORPH is built on the Unitree B2-W quadruped platform — 16 degrees of freedom,
+          active leveling via 12-DOF legs, and hub motors replacing the standard feet.
+        </p>
 
-      function drawRemote() {
-        // Re-check size each frame (cheap) in case of layout changes
-        const rect = canvas.getBoundingClientRect();
-        if (Math.abs(rect.width - W) > 1 || Math.abs(rect.height - H) > 1) {
-          resizeCanvas();
-        }
+        
+          href="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-green"
+        >
+          Open Full 3D Viewer
+        </a>
 
-        const w = W;
-        const h = H;
+        <!-- Remote row: animated canvas + 3D viewer of the remote -->
+        <div class="rc-row">
+          <div class="rc-box">
+            <canvas id="rc"></canvas>
+            <p class="rc-caption">// AxisCtrl Mobile Remote — Live UI</p>
+          </div>
+          <div class="rc-box">
+            <iframe
+              class="rc-3d-frame"
+              src="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom&embed=1"
+              title="AxisCtrl Remote 3D"
+              allowfullscreen
+            ></iframe>
+            <p class="rc-caption">// AxisCtrl Remote — 3D Model</p>
+          </div>
+        </div>
+      </div>
 
-        if (w < 20 || h < 20) {
-          requestAnimationFrame(drawRemote);
-          return;
-        }
+      <div class="viewer-frame">
+        <div class="viewer-corner tl"></div>
+        <div class="viewer-corner tr"></div>
+        <div class="viewer-corner bl"></div>
+        <div class="viewer-corner br"></div>
+        <div class="viewer-label">B2W_DESCRIPTION.URDF — LIVE</div>
 
-        ctx.clearRect(0, 0, w, h);
-        const bg = ctx.createLinearGradient(0, 0, 0, h);
-        bg.addColorStop(0, '#0a0a0a');
-        bg.addColorStop(1, '#020202');
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, w, h);
+        <iframe
+          src="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom&embed=1"
+          title="DOG MORPH 3D Viewer"
+          width="100%"
+          height="420"
+          style="border:none;display:block;"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </div>
 
-        drawGrid(w, h);
+  <div class="features-section">
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-number">01</div>
+        <div class="feature-title">Studio Mode</div>
+        <div class="feature-body">
+          Direct wheel traction, horizontal body, absolute silence below 45 dB(A).
+          Designed for live TV floors where noise is unacceptable.
+        </div>
+        <span class="feature-tag">// VESC FOC SILENT DRIVE</span>
+      </div>
 
-        // Scanlines
-        ctx.save();
-        ctx.globalAlpha = 0.05;
-        ctx.fillStyle = '#00ff41';
-        for (let i = 0; i < h; i += 4) {
-          ctx.fillRect(0, i, w, 1);
-        }
-        ctx.restore();
+      <div class="feature-card">
+        <div class="feature-number">02</div>
+        <div class="feature-title">Pendular Carving</div>
+        <div class="feature-body">
+          Dynamic balance mode with organic body tilt — cinematic aesthetic for concert stages
+          and immersive broadcast productions.
+        </div>
+        <span class="feature-tag">// GYROSCOPIC BALANCE</span>
+      </div>
 
-        // Header
-        text('// AXISCTRL REMOTE', 14, 20, 11, '#00ff41', 'left', 0.95);
-        text('DOG MORPH LIVE', w - 14, 20, 11, '#00ff41', 'right', 0.9);
-        line(14, 30, w - 14, 30, '#00ff41', 0.25, 1);
+      <div class="feature-card">
+        <div class="feature-number">03</div>
+        <div class="feature-title">Active Leveling</div>
+        <div class="feature-body">
+          12-DOF legs compensate low-frequency terrain variation in real time.
+          The camera stays horizon-locked regardless of floor irregularities.
+        </div>
+        <span class="feature-tag">// IMU + LEG COMPENSATION</span>
+      </div>
 
-        // Decide layout: 3 cols if wide enough, else vertical stack
-        const isNarrow = w < 560;
+      <div class="feature-card">
+        <div class="feature-number">04</div>
+        <div class="feature-title">25° Ramp Capable</div>
+        <div class="feature-body">
+          Designed to navigate concert stage ramps and multi-level broadcast sets.
+          Hub motors deliver torque where traditional wheels fail.
+        </div>
+        <span class="feature-tag">// ALL-TERRAIN MOBILITY</span>
+      </div>
 
-        const pad = 10;
-        const topY = 44;
-        const bottomPad = 24;
+      <div class="feature-card">
+        <div class="feature-number">05</div>
+        <div class="feature-title">AxisCtrl Ready</div>
+        <div class="feature-body">
+          Native integration with Electric Friends AxisCtrl software — the broadcast robotics
+          control platform deployed at France Télévisions.
+        </div>
+        <span class="feature-tag">// BROADCAST ECOSYSTEM</span>
+      </div>
 
-        if (!isNarrow) {
-          // ---- 3 columns horizontal layout ----
-          const panelH = h - topY - bottomPad;
-          const leftW = Math.max(160, Math.min(240, w * 0.3));
-          const rightW = Math.max(140, Math.min(200, w * 0.25));
-          const centerW = w - leftW - rightW - pad * 4;
+      <div class="feature-card">
+        <div class="feature-number">06</div>
+        <div class="feature-title">IP Protected</div>
+        <div class="feature-body">
+          Concept protected by Soleau envelope filed with INPI on February 9, 2026.
+          Developed by Pascal Gautier — creator of ARCAM.
+        </div>
+        <span class="feature-tag">// INPI SOLEAU 09.02.2026</span>
+      </div>
+    </div>
+  </div>
 
-          const leftX = pad;
-          const centerX = leftX + leftW + pad;
-          const rightX = centerX + centerW + pad;
+  <footer>
+    <div class="footer-brand">DOG MORPH</div>
+    <div class="footer-info">
+      PASCAL GAUTIER — PASCAL ROBOTICS<br>
+      FRANCE REPRESENTATIVE, ELECTRIC FRIENDS AS<br>
+      <a href="mailto:gautier.pascal@gmail.com">gautier.pascal@gmail.com</a>
+    </div>
+  </footer>
 
-          // LEFT
-          panel(leftX, topY, leftW, panelH, 'MOTION / DRIVE');
-          const joyCX = leftX + leftW / 2;
-          const joyCY = topY + 30 + (panelH - 30) * 0.35;
-          const joyR = Math.min(leftW * 0.35, panelH * 0.22);
+  <script>
+    (function () {
+      function initRemoteCanvas() {
+        try {
+          const canvas = document.getElementById('rc');
+          if (!canvas) return;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
 
-          let dx, dy;
-          if (mouse.active) {
-            dx = (mouse.x - 0.5) * 2 * joyR * 0.7;
-            dy = (mouse.y - 0.5) * 2 * joyR * 0.7;
-          } else {
-            dx = Math.sin(t * 0.0012) * joyR * 0.45;
-            dy = Math.cos(t * 0.0015) * joyR * 0.45;
+          let dpr = Math.max(1, window.devicePixelRatio || 1);
+          let t = 0;
+          let W = 0, H = 0;
+          const mouse = { x: 0.5, y: 0.5, active: false };
+
+          function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            W = Math.max(1, rect.width);
+            H = Math.max(1, rect.height);
+            dpr = Math.max(1, window.devicePixelRatio || 1);
+            canvas.width = Math.floor(W * dpr);
+            canvas.height = Math.floor(H * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
           }
-          joystick(joyCX, joyCY, joyR, dx, dy, 'VX / VY');
 
-          // Modes
-          const modes = ['STUDIO', 'CARVING', 'STAND'];
-          const active = Math.floor((t * 0.0005) % 3);
-          const modeY = joyCY + joyR + 34;
-          const modeW = (leftW - 20 - 6 * (modes.length - 1)) / modes.length;
-          for (let i = 0; i < modes.length; i++) {
-            const mx = leftX + 10 + i * (modeW + 6);
-            const on = i === active;
+          function roundedRect(x, y, w, h, r) {
+            r = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+          }
+
+          function line(x1, y1, x2, y2, color, alpha, width) {
             ctx.save();
-            roundedRect(mx, modeY, modeW, 22, 4);
-            ctx.fillStyle = on ? 'rgba(0,255,65,0.2)' : 'rgba(0,255,65,0.04)';
-            ctx.fill();
-            ctx.strokeStyle = on ? 'rgba(0,255,65,0.8)' : 'rgba(0,255,65,0.2)';
+            ctx.strokeStyle = color;
+            ctx.globalAlpha = alpha == null ? 1 : alpha;
+            ctx.lineWidth = width || 1;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
             ctx.stroke();
             ctx.restore();
-            text(modes[i], mx + modeW / 2, modeY + 15, 9, on ? '#00ff41' : '#888', 'center');
           }
 
-          // CENTER
-          panel(centerX, topY, centerW, panelH, 'CAMERA / PREVIEW');
-          const previewX = centerX + 10;
-          const previewY = topY + 34;
-          const previewW = centerW - 20;
-          const previewH = Math.min(160, panelH * 0.48);
-          drawPreview(previewX, previewY, previewW, previewH);
-
-          const vals = [
-            0.72 + Math.sin(t * 0.0011) * 0.08,
-            0.55 + Math.cos(t * 0.0013) * 0.1,
-            0.88 + Math.sin(t * 0.0017 + 1) * 0.05
-          ];
-          let mY = previewY + previewH + 20;
-          meter(previewX, mY, previewW, 10, vals[0], 'PAN / TILT LOAD');
-          mY += 26;
-          meter(previewX, mY, previewW, 10, vals[1], 'IRIS / ZOOM');
-          mY += 26;
-          meter(previewX, mY, previewW, 10, vals[2], 'LINK STABILITY');
-
-          // RIGHT
-          panel(rightX, topY, rightW, panelH, 'SPATIAL / STATUS');
-          const radarR = Math.min(rightW * 0.35, panelH * 0.22);
-          const radarCX = rightX + rightW / 2;
-          const radarCY = topY + 34 + radarR + 4;
-          drawRadar(radarCX, radarCY, radarR);
-
-          const statusLines = [
-            ['BATTERY', Math.round(82 + Math.sin(t * 0.0005) * 2) + '%'],
-            ['LATENCY', Math.round(12 + Math.sin(t * 0.002) * 4) + ' MS'],
-            ['NOISE', Math.round(42 + Math.sin(t * 0.0012) * 2) + ' DB(A)'],
-            ['LINK', 'OK']
-          ];
-          let sy = radarCY + radarR + 22;
-          for (const row of statusLines) {
-            text(row[0], rightX + 12, sy, 9, '#888', 'left', 0.9);
-            text(row[1], rightX + rightW - 12, sy, 10, '#00ff41', 'right');
-            sy += 16;
-          }
-        } else {
-          // ---- Vertical stack for narrow / mobile ----
-          const colW = w - pad * 2;
-          let curY = topY;
-
-          // MOTION panel
-          const motionH = 180;
-          panel(pad, curY, colW, motionH, 'MOTION / DRIVE');
-          const joyR = Math.min(colW * 0.18, 50);
-          const joyCX = pad + colW * 0.28;
-          const joyCY = curY + motionH / 2 + 4;
-          let dx, dy;
-          if (mouse.active) {
-            dx = (mouse.x - 0.5) * 2 * joyR * 0.7;
-            dy = (mouse.y - 0.5) * 2 * joyR * 0.7;
-          } else {
-            dx = Math.sin(t * 0.0012) * joyR * 0.45;
-            dy = Math.cos(t * 0.0015) * joyR * 0.45;
-          }
-          joystick(joyCX, joyCY, joyR, dx, dy, 'VX / VY');
-
-          // Modes on the right of joystick
-          const modes = ['STUDIO', 'CARVING', 'STAND'];
-          const active = Math.floor((t * 0.0005) % 3);
-          const modeStartX = pad + colW * 0.5;
-          const modeW2 = colW * 0.45;
-          for (let i = 0; i < modes.length; i++) {
-            const my = curY + 36 + i * 32;
-            const on = i === active;
+          function text(txt, x, y, size, color, align, alpha) {
             ctx.save();
-            roundedRect(modeStartX, my, modeW2, 24, 4);
-            ctx.fillStyle = on ? 'rgba(0,255,65,0.2)' : 'rgba(0,255,65,0.04)';
+            ctx.globalAlpha = alpha == null ? 1 : alpha;
+            ctx.fillStyle = color || '#00ff41';
+            ctx.font = (size || 12) + 'px "Share Tech Mono", monospace';
+            ctx.textAlign = align || 'left';
+            ctx.fillText(txt, x, y);
+            ctx.restore();
+          }
+
+          function drawGrid(w, h) {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(0,255,65,0.07)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < w; x += 28) {
+              ctx.beginPath();
+              ctx.moveTo(x, 0);
+              ctx.lineTo(x, h);
+              ctx.stroke();
+            }
+            for (let y = 0; y < h; y += 28) {
+              ctx.beginPath();
+              ctx.moveTo(0, y);
+              ctx.lineTo(w, y);
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
+
+          function panel(x, y, pw, ph, title) {
+            ctx.save();
+            roundedRect(x, y, pw, ph, 10);
+            ctx.fillStyle = 'rgba(0,255,65,0.025)';
             ctx.fill();
-            ctx.strokeStyle = on ? 'rgba(0,255,65,0.8)' : 'rgba(0,255,65,0.2)';
+            ctx.strokeStyle = 'rgba(0,255,65,0.22)';
+            ctx.lineWidth = 1;
             ctx.stroke();
             ctx.restore();
-            text(modes[i], modeStartX + modeW2 / 2, my + 16, 10, on ? '#00ff41' : '#888', 'center');
+
+            text(title, x + 10, y + 16, 10, '#00ff41', 'left', 0.95);
+            line(x + 10, y + 22, x + pw - 10, y + 22, '#00ff41', 0.15, 1);
           }
-          curY += motionH + 10;
 
-          // CAMERA panel
-          const camH = 150;
-          panel(pad, curY, colW, camH, 'CAMERA / PREVIEW');
-          drawPreview(pad + 10, curY + 30, colW - 20, camH - 40);
-          curY += camH + 10;
+          function joystick(cx, cy, r, dx, dy, label) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(0,255,65,0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.restore();
 
-          // STATUS panel with meters (compact)
-          const statusH = h - curY - bottomPad;
-          if (statusH > 60) {
-            panel(pad, curY, colW, statusH, 'STATUS / METERS');
-            const vals = [
-              0.72 + Math.sin(t * 0.0011) * 0.08,
-              0.88 + Math.sin(t * 0.0017 + 1) * 0.05
+            line(cx - r, cy, cx + r, cy, '#00ff41', 0.15, 1);
+            line(cx, cy - r, cx, cy + r, '#00ff41', 0.15, 1);
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(0,255,65,0.15)';
+            ctx.stroke();
+            ctx.restore();
+
+            const px = cx + dx;
+            const py = cy + dy;
+
+            ctx.save();
+            const g = ctx.createRadialGradient(px, py, 0, px, py, 20);
+            g.addColorStop(0, 'rgba(0,255,65,0.7)');
+            g.addColorStop(1, 'rgba(0,255,65,0)');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(px, py, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(px, py, 7, 0, Math.PI * 2);
+            ctx.fillStyle = '#00ff41';
+            ctx.fill();
+            ctx.restore();
+
+            text(label, cx, cy + r + 16, 9, '#888', 'center', 0.9);
+          }
+
+          function meter(x, y, w, h, fill, label) {
+            ctx.save();
+            roundedRect(x, y, w, h, 3);
+            ctx.fillStyle = 'rgba(0,255,65,0.06)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(0,255,65,0.22)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.restore();
+
+            const ff = Math.max(0, Math.min(1, fill));
+            if (ff > 0) {
+              ctx.save();
+              roundedRect(x + 1, y + 1, Math.max(1, (w - 2) * ff), h - 2, 2);
+              const g = ctx.createLinearGradient(x, y, x + w, y);
+              g.addColorStop(0, 'rgba(0,255,65,0.3)');
+              g.addColorStop(1, 'rgba(0,255,65,0.9)');
+              ctx.fillStyle = g;
+              ctx.fill();
+              ctx.restore();
+            }
+
+            text(label, x, y - 4, 9, '#888', 'left', 0.85);
+            text(Math.round(ff * 100) + '%', x + w, y - 4, 9, '#00ff41', 'right', 0.9);
+          }
+
+          function drawPreview(x, y, w, h) {
+            ctx.save();
+            roundedRect(x, y, w, h, 6);
+            ctx.clip();
+
+            const g = ctx.createLinearGradient(x, y, x, y + h);
+            g.addColorStop(0, '#0a1410');
+            g.addColorStop(0.6, '#050806');
+            g.addColorStop(1, '#000');
+            ctx.fillStyle = g;
+            ctx.fillRect(x, y, w, h);
+
+            const horizon = y + h * 0.55 + Math.sin(t * 0.001) * 3;
+            line(x, horizon, x + w, horizon, '#00ff41', 0.2, 1);
+
+            const sx = x + w * 0.5 + Math.sin(t * 0.0008) * w * 0.25;
+            const sy = horizon - 14;
+            ctx.fillStyle = 'rgba(0,255,65,0.4)';
+            ctx.fillRect(sx - 4, sy - 14, 8, 18);
+            ctx.fillRect(sx - 8, sy + 4, 4, 8);
+            ctx.fillRect(sx + 4, sy + 4, 4, 8);
+
+            const cx = x + w / 2;
+            const cy = y + h / 2;
+            line(cx - 10, cy, cx + 10, cy, '#00ff41', 0.7, 1);
+            line(cx, cy - 10, cx, cy + 10, '#00ff41', 0.7, 1);
+            ctx.save();
+            ctx.strokeStyle = '#00ff41';
+            ctx.globalAlpha = 0.45;
+            ctx.strokeRect(cx - 18, cy - 12, 36, 24);
+            ctx.restore();
+
+            ctx.restore();
+
+            ctx.save();
+            roundedRect(x, y, w, h, 6);
+            ctx.strokeStyle = 'rgba(0,255,65,0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.restore();
+
+            text('CAM 01 — LIVE', x + 8, y + 14, 9, '#00ff41', 'left', 0.95);
+            text('REC ●', x + w - 8, y + 14, 9, '#ff3344', 'right', 0.7 + Math.sin(t * 0.01) * 0.3);
+          }
+
+          function drawRadar(cx, cy, r) {
+            for (let i = 1; i <= 3; i++) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(cx, cy, (r / 3) * i, 0, Math.PI * 2);
+              ctx.strokeStyle = 'rgba(0,255,65,0.18)';
+              ctx.stroke();
+              ctx.restore();
+            }
+            line(cx - r, cy, cx + r, cy, '#00ff41', 0.18, 1);
+            line(cx, cy - r, cx, cy + r, '#00ff41', 0.18, 1);
+
+            const sweep = (t * 0.002) % (Math.PI * 2);
+            ctx.save();
+            if (typeof ctx.createConicGradient === 'function') {
+              const sg = ctx.createConicGradient(sweep, cx, cy);
+              sg.addColorStop(0, 'rgba(0,255,65,0.5)');
+              sg.addColorStop(0.15, 'rgba(0,255,65,0)');
+              sg.addColorStop(1, 'rgba(0,255,65,0)');
+              ctx.fillStyle = sg;
+              ctx.beginPath();
+              ctx.arc(cx, cy, r, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              ctx.strokeStyle = 'rgba(0,255,65,0.7)';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.moveTo(cx, cy);
+              ctx.lineTo(cx + Math.cos(sweep) * r, cy + Math.sin(sweep) * r);
+              ctx.stroke();
+            }
+            ctx.restore();
+
+            const blips = [
+              { a: 0.6, d: 0.55 },
+              { a: 2.2, d: 0.8 },
+              { a: 4.1, d: 0.35 }
             ];
-            let mY = curY + 36;
-            meter(pad + 10, mY, colW - 20, 9, vals[0], 'PAN / TILT');
-            mY += 24;
-            meter(pad + 10, mY, colW - 20, 9, vals[1], 'LINK');
-            mY += 22;
-            text('BATTERY ' + Math.round(82 + Math.sin(t * 0.0005) * 2) + '%  ·  LATENCY ' + Math.round(12 + Math.sin(t * 0.002) * 4) + 'MS  ·  NOISE ' + Math.round(42 + Math.sin(t * 0.0012) * 2) + 'DB',
-              pad + 10, mY + 8, 9, '#00ff41', 'left', 0.9);
+            for (const b of blips) {
+              const bx = cx + Math.cos(b.a) * r * b.d;
+              const by = cy + Math.sin(b.a) * r * b.d;
+              const pulse = (Math.sin(t * 0.004 + b.a) + 1) * 0.5;
+              ctx.save();
+              ctx.fillStyle = 'rgba(0,255,65,' + (0.4 + pulse * 0.5) + ')';
+              ctx.beginPath();
+              ctx.arc(bx, by, 3, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
           }
+
+          function drawRemote() {
+            const rect = canvas.getBoundingClientRect();
+            if (Math.abs(rect.width - W) > 1 || Math.abs(rect.height - H) > 1) {
+              resizeCanvas();
+            }
+
+            const w = W;
+            const h = H;
+
+            if (w < 20 || h < 20) {
+              requestAnimationFrame(drawRemote);
+              return;
+            }
+
+            ctx.clearRect(0, 0, w, h);
+            const bg = ctx.createLinearGradient(0, 0, 0, h);
+            bg.addColorStop(0, '#0a0a0a');
+            bg.addColorStop(1, '#020202');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, w, h);
+
+            drawGrid(w, h);
+
+            ctx.save();
+            ctx.globalAlpha = 0.05;
+            ctx.fillStyle = '#00ff41';
+            for (let i = 0; i < h; i += 4) {
+              ctx.fillRect(0, i, w, 1);
+            }
+            ctx.restore();
+
+            text('// AXISCTRL REMOTE', 14, 20, 11, '#00ff41', 'left', 0.95);
+            text('DOG MORPH LIVE', w - 14, 20, 11, '#00ff41', 'right', 0.9);
+            line(14, 30, w - 14, 30, '#00ff41', 0.25, 1);
+
+            const isNarrow = w < 560;
+            const pad = 10;
+            const topY = 44;
+            const bottomPad = 24;
+
+            if (!isNarrow) {
+              const panelH = h - topY - bottomPad;
+              const leftW = Math.max(160, Math.min(240, w * 0.3));
+              const rightW = Math.max(140, Math.min(200, w * 0.25));
+              const centerW = w - leftW - rightW - pad * 4;
+
+              const leftX = pad;
+              const centerX = leftX + leftW + pad;
+              const rightX = centerX + centerW + pad;
+
+              panel(leftX, topY, leftW, panelH, 'MOTION / DRIVE');
+              const joyCX = leftX + leftW / 2;
+              const joyCY = topY + 30 + (panelH - 30) * 0.35;
+              const joyR = Math.min(leftW * 0.35, panelH * 0.22);
+
+              let dx, dy;
+              if (mouse.active) {
+                dx = (mouse.x - 0.5) * 2 * joyR * 0.7;
+                dy = (mouse.y - 0.5) * 2 * joyR * 0.7;
+              } else {
+                dx = Math.sin(t * 0.0012) * joyR * 0.45;
+                dy = Math.cos(t * 0.0015) * joyR * 0.45;
+              }
+              joystick(joyCX, joyCY, joyR, dx, dy, 'VX / VY');
+
+              const modes = ['STUDIO', 'CARVING', 'STAND'];
+              const active = Math.floor((t * 0.0005) % 3);
+              const modeY = joyCY + joyR + 34;
+              const modeW = (leftW - 20 - 6 * (modes.length - 1)) / modes.length;
+              for (let i = 0; i < modes.length; i++) {
+                const mx = leftX + 10 + i * (modeW + 6);
+                const on = i === active;
+                ctx.save();
+                roundedRect(mx, modeY, modeW, 22, 4);
+                ctx.fillStyle = on ? 'rgba(0,255,65,0.2)' : 'rgba(0,255,65,0.04)';
+                ctx.fill();
+                ctx.strokeStyle = on ? 'rgba(0,255,65,0.8)' : 'rgba(0,255,65,0.2)';
+                ctx.stroke();
+                ctx.restore();
+                text(modes[i], mx + modeW / 2, modeY + 15, 9, on ? '#00ff41' : '#888', 'center');
+              }
+
+              panel(centerX, topY, centerW, panelH, 'CAMERA / PREVIEW');
+              const previewX = centerX + 10;
+              const previewY = topY + 34;
+              const previewW = centerW - 20;
+              const previewH = Math.min(160, panelH * 0.48);
+              drawPreview(previewX, previewY, previewW, previewH);
+
+              const vals = [
+                0.72 + Math.sin(t * 0.0011) * 0.08,
+                0.55 + Math.cos(t * 0.0013) * 0.1,
+                0.88 + Math.sin(t * 0.0017 + 1) * 0.05
+              ];
+              let mY = previewY + previewH + 20;
+              meter(previewX, mY, previewW, 10, vals[0], 'PAN / TILT LOAD');
+              mY += 26;
+              meter(previewX, mY, previewW, 10, vals[1], 'IRIS / ZOOM');
+              mY += 26;
+              meter(previewX, mY, previewW, 10, vals[2], 'LINK STABILITY');
+
+              panel(rightX, topY, rightW, panelH, 'SPATIAL / STATUS');
+              const radarR = Math.min(rightW * 0.35, panelH * 0.22);
+              const radarCX = rightX + rightW / 2;
+              const radarCY = topY + 34 + radarR + 4;
+              drawRadar(radarCX, radarCY, radarR);
+
+              const statusLines = [
+                ['BATTERY', Math.round(82 + Math.sin(t * 0.0005) * 2) + '%'],
+                ['LATENCY', Math.round(12 + Math.sin(t * 0.002) * 4) + ' MS'],
+                ['NOISE', Math.round(42 + Math.sin(t * 0.0012) * 2) + ' DB(A)'],
+                ['LINK', 'OK']
+              ];
+              let sy = radarCY + radarR + 22;
+              for (const row of statusLines) {
+                text(row[0], rightX + 12, sy, 9, '#888', 'left', 0.9);
+                text(row[1], rightX + rightW - 12, sy, 10, '#00ff41', 'right');
+                sy += 16;
+              }
+            } else {
+              const colW = w - pad * 2;
+              let curY = topY;
+
+              const motionH = 180;
+              panel(pad, curY, colW, motionH, 'MOTION / DRIVE');
+              const joyR = Math.min(colW * 0.18, 50);
+              const joyCX = pad + colW * 0.28;
+              const joyCY = curY + motionH / 2 + 4;
+              let dx, dy;
+              if (mouse.active) {
+                dx = (mouse.x - 0.5) * 2 * joyR * 0.7;
+                dy = (mouse.y - 0.5) * 2 * joyR * 0.7;
+              } else {
+                dx = Math.sin(t * 0.0012) * joyR * 0.45;
+                dy = Math.cos(t * 0.0015) * joyR * 0.45;
+              }
+              joystick(joyCX, joyCY, joyR, dx, dy, 'VX / VY');
+
+              const modes = ['STUDIO', 'CARVING', 'STAND'];
+              const active = Math.floor((t * 0.0005) % 3);
+              const modeStartX = pad + colW * 0.5;
+              const modeW2 = colW * 0.45;
+              for (let i = 0; i < modes.length; i++) {
+                const my = curY + 36 + i * 32;
+                const on = i === active;
+                ctx.save();
+                roundedRect(modeStartX, my, modeW2, 24, 4);
+                ctx.fillStyle = on ? 'rgba(0,255,65,0.2)' : 'rgba(0,255,65,0.04)';
+                ctx.fill();
+                ctx.strokeStyle = on ? 'rgba(0,255,65,0.8)' : 'rgba(0,255,65,0.2)';
+                ctx.stroke();
+                ctx.restore();
+                text(modes[i], modeStartX + modeW2 / 2, my + 16, 10, on ? '#00ff41' : '#888', 'center');
+              }
+              curY += motionH + 10;
+
+              const camH = 150;
+              panel(pad, curY, colW, camH, 'CAMERA / PREVIEW');
+              drawPreview(pad + 10, curY + 30, colW - 20, camH - 40);
+              curY += camH + 10;
+
+              const statusH = h - curY - bottomPad;
+              if (statusH > 60) {
+                panel(pad, curY, colW, statusH, 'STATUS / METERS');
+                const vals = [
+                  0.72 + Math.sin(t * 0.0011) * 0.08,
+                  0.88 + Math.sin(t * 0.0017 + 1) * 0.05
+                ];
+                let mY = curY + 36;
+                meter(pad + 10, mY, colW - 20, 9, vals[0], 'PAN / TILT');
+                mY += 24;
+                meter(pad + 10, mY, colW - 20, 9, vals[1], 'LINK');
+                mY += 22;
+                text('BATTERY ' + Math.round(82 + Math.sin(t * 0.0005) * 2) + '%  ·  LATENCY ' + Math.round(12 + Math.sin(t * 0.002) * 4) + 'MS  ·  NOISE ' + Math.round(42 + Math.sin(t * 0.0012) * 2) + 'DB',
+                  pad + 10, mY + 8, 9, '#00ff41', 'left', 0.9);
+              }
+            }
+
+            text('SOLEAU 09.02.2026', 14, h - 8, 9, '#555', 'left', 0.9);
+            const blink = 0.6 + Math.sin(t * 0.006) * 0.4;
+            text('● LIVE', w - 14, h - 8, 10, '#00ff41', 'right', blink);
+
+            t += 16;
+            requestAnimationFrame(drawRemote);
+          }
+
+          function onPointerMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = (e.clientX - rect.left) / rect.width;
+            mouse.y = (e.clientY - rect.top) / rect.height;
+            mouse.active = true;
+          }
+
+          function onPointerLeave() {
+            mouse.active = false;
+          }
+
+          window.addEventListener('resize', resizeCanvas);
+          canvas.addEventListener('pointermove', onPointerMove);
+          canvas.addEventListener('pointerleave', onPointerLeave);
+
+          resizeCanvas();
+          requestAnimationFrame(drawRemote);
+        } catch (err) {
+          console.error('Canvas remote init error:', err);
         }
-
-        // Footer
-        text('SOLEAU 09.02.2026', 14, h - 8, 9, '#555', 'left', 0.9);
-        const blink = 0.6 + Math.sin(t * 0.006) * 0.4;
-        text('● LIVE', w - 14, h - 8, 10, '#00ff41', 'right', blink);
-
-        t += 16;
-        requestAnimationFrame(drawRemote);
       }
 
-      function onPointerMove(e) {
-        const rect = canvas.getBoundingClientRect();
-        mouse.x = (e.clientX - rect.left) / rect.width;
-        mouse.y = (e.clientY - rect.top) / rect.height;
-        mouse.active = true;
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRemoteCanvas);
+      } else {
+        initRemoteCanvas();
       }
-
-      function onPointerLeave() {
-        mouse.active = false;
-      }
-
-      window.addEventListener('resize', resizeCanvas);
-      canvas.addEventListener('pointermove', onPointerMove);
-      canvas.addEventListener('pointerleave', onPointerLeave);
-
-      resizeCanvas();
-      requestAnimationFrame(drawRemote);
-    });
+    })();
   </script>
+
+</body>
+</html>
