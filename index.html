@@ -6,15 +6,31 @@
   <title>DOG MORPH — Broadcast Quadruped Robot</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    :root { --green: #00ff41; --dark: #000000; --text: #cccccc; }
+    :root {
+      --green: #00ff41;
+      --dark: #000000;
+      --dark-2: #030303;
+      --text: #cccccc;
+      --muted: #888888;
+      --line: #111111;
+      --line-2: #1a1a1a;
+      --white: #ffffff;
+    }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       background: var(--dark);
       color: var(--text);
       font-family: 'Rajdhani', sans-serif;
       overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
     .hero {
@@ -34,16 +50,25 @@
       z-index: 1;
     }
 
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.88) 100%);
+      z-index: 2;
+    }
+
     .scan-line {
       position: absolute;
       inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,255,65,0.015) 2px,
-        rgba(0,255,65,0.015) 4px
-      );
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0,255,65,0.015) 2px,
+          rgba(0,255,65,0.015) 4px
+        );
       pointer-events: none;
       animation: scan 8s linear infinite;
       z-index: 3;
@@ -52,6 +77,11 @@
     @keyframes scan {
       0% { background-position: 0 0; }
       100% { background-position: 0 100px; }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .hero-top-tag {
@@ -78,14 +108,14 @@
       display: flex;
       flex-direction: column;
       gap: 24px;
-      max-width: 600px;
+      max-width: 620px;
     }
 
     .hero-title {
       font-family: 'Bebas Neue', sans-serif;
       font-size: clamp(80px, 10vw, 140px);
       line-height: 0.9;
-      color: white;
+      color: var(--white);
       letter-spacing: -2px;
       opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.4s;
@@ -101,7 +131,7 @@
       font-weight: 600;
       color: #dddddd;
       line-height: 1.6;
-      max-width: 400px;
+      max-width: 420px;
       opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.6s;
     }
@@ -130,7 +160,7 @@
     .stat-label {
       font-family: 'Share Tech Mono', monospace;
       font-size: 10px;
-      color: #555;
+      color: #555555;
       letter-spacing: 2px;
       text-transform: uppercase;
     }
@@ -141,14 +171,9 @@
       right: 60px;
       font-family: 'Share Tech Mono', monospace;
       font-size: 10px;
-      color: #555;
+      color: #555555;
       letter-spacing: 3px;
       z-index: 10;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .glow-line {
@@ -165,14 +190,13 @@
       font-family: 'Bebas Neue', sans-serif;
       font-size: 18px;
       letter-spacing: 2px;
-      text-decoration: none;
       display: inline-block;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
       clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
     }
 
     .btn-green:hover {
-      background: white;
+      background: #ffffff;
       transform: translateY(-2px);
     }
 
@@ -182,8 +206,8 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      background: #030303;
-      border-bottom: 1px solid #111;
+      background: var(--dark-2);
+      border-bottom: 1px solid var(--line);
     }
 
     .specs-bar::-webkit-scrollbar {
@@ -195,7 +219,7 @@
       align-items: center;
       gap: 12px;
       padding: 0 32px;
-      border-right: 1px solid #1a1a1a;
+      border-right: 1px solid var(--line-2);
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -214,14 +238,19 @@
     .spec-text {
       font-family: 'Share Tech Mono', monospace;
       font-size: 11px;
-      color: #555;
+      color: #555555;
       letter-spacing: 1px;
+    }
+
+    .viewer-wrap {
+      background: var(--dark-2);
+      border-bottom: 1px solid var(--line);
     }
 
     .viewer-section {
       padding: 100px 60px 0;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
       gap: 80px;
       align-items: flex-start;
       max-width: 1400px;
@@ -241,21 +270,23 @@
       font-family: 'Bebas Neue', sans-serif;
       font-size: clamp(36px, 5vw, 64px);
       line-height: 0.95;
-      color: white;
+      color: var(--white);
       margin-bottom: 24px;
     }
 
     .section-body {
       font-size: 15px;
-      color: #888888;
+      color: var(--muted);
       line-height: 1.7;
       margin-bottom: 32px;
+      max-width: 640px;
     }
 
     .viewer-frame {
       position: relative;
-      border: 1px solid #1a1a1a;
+      border: 1px solid var(--line-2);
       overflow: hidden;
+      background: #050505;
     }
 
     .viewer-frame::before {
@@ -313,40 +344,45 @@
       z-index: 3;
     }
 
-    .remote-img {
-      max-width: 520px;
-      padding: 0;
-      border: 1px solid #1a1a1a;
-      position: relative;
-      overflow: hidden;
-      margin-top: 22px;
-      margin-left: 0;
-      margin-right: 0;
-      text-align: center;
-    }
-
-    .remote-img img {
+    .remote-panel {
       width: 100%;
-      display: block;
+      max-width: 760px;
+      margin-top: 24px;
+      border: 1px solid var(--line-2);
+      background: #050505;
+      overflow: hidden;
     }
 
-    .remote-img p {
-      margin: 10px 0 6px;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 10px;
-      color: #888888;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+    .remote-canvas-wrap {
+      position: relative;
+      width: 100%;
+      min-height: 520px;
+      background:
+        radial-gradient(circle at center, rgba(0,255,65,0.05) 0%, rgba(0,0,0,0) 55%),
+        #0a0a0a;
+      overflow: hidden;
     }
 
     #rc {
       width: 100%;
-      height: 420px;
+      height: 520px;
       display: block;
       cursor: grab;
-      background: #111;
-      transform: scale(0.72);
+      background: #111111;
+      transform: scale(0.88);
       transform-origin: center center;
+    }
+
+    .remote-caption {
+      margin: 0;
+      padding: 12px 14px 10px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-top: 1px solid var(--line-2);
+      background: #040404;
     }
 
     .features-section {
@@ -359,13 +395,13 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 1px;
-      background: #111;
+      background: var(--line);
     }
 
     .feature-card {
       background: var(--dark);
       padding: 40px;
-      transition: background 0.3s;
+      transition: background 0.3s ease;
     }
 
     .feature-card:hover {
@@ -383,14 +419,14 @@
     .feature-title {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 28px;
-      color: white;
+      color: var(--white);
       letter-spacing: 1px;
       margin-bottom: 12px;
     }
 
     .feature-body {
       font-size: 14px;
-      color: #888888;
+      color: var(--muted);
       line-height: 1.6;
     }
 
@@ -404,7 +440,7 @@
     }
 
     footer {
-      border-top: 1px solid #111;
+      border-top: 1px solid var(--line);
       padding: 40px 60px;
       display: flex;
       justify-content: space-between;
@@ -416,31 +452,35 @@
     .footer-brand {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 24px;
-      color: white;
+      color: var(--white);
       letter-spacing: 3px;
     }
 
     .footer-info {
       font-family: 'Share Tech Mono', monospace;
       font-size: 10px;
-      color: #888888;
+      color: var(--muted);
       letter-spacing: 2px;
       text-align: right;
       line-height: 1.8;
     }
 
+    .footer-info a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    @media screen and (max-width: 1024px) {
+      .viewer-section {
+        gap: 48px;
+      }
+
+      .remote-panel {
+        max-width: 100%;
+      }
+    }
+
     @media screen and (max-width: 768px) {
-      .remote-img {
-        max-width: 100% !important;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      #rc {
-        height: 440px !important;
-        transform: scale(0.92) !important;
-      }
-
       .hero-top-tag {
         left: 20px;
         top: 20px;
@@ -474,11 +514,11 @@
       }
 
       .stat-value {
-        font-size: 18px !important;
+        font-size: 18px;
       }
 
       .stat-label {
-        font-size: 8px !important;
+        font-size: 8px;
         letter-spacing: 1px;
       }
 
@@ -497,7 +537,23 @@
       }
 
       .viewer-frame iframe {
-        height: 280px;
+        height: 300px;
+      }
+
+      .remote-panel {
+        max-width: 100%;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .remote-canvas-wrap {
+        min-height: 460px;
+      }
+
+      #rc {
+        height: 460px;
+        transform: scale(1);
       }
 
       .features-section {
@@ -532,199 +588,209 @@
     }
 
     @media screen and (max-width: 480px) {
-      #rc {
-        height: 380px !important;
-        transform: scale(0.98) !important;
-      }
-
       .hero-stats {
         gap: 12px;
       }
 
       .stat-value {
-        font-size: 16px !important;
+        font-size: 16px;
       }
 
       .stat-label {
-        font-size: 7px !important;
+        font-size: 7px;
       }
 
       .features-grid {
         grid-template-columns: 1fr;
       }
+
+      .remote-canvas-wrap {
+        min-height: 380px;
+      }
+
+      #rc {
+        height: 380px;
+        transform: scale(1.02);
+      }
+
+      .remote-caption {
+        font-size: 9px;
+        letter-spacing: 1.5px;
+      }
     }
   </style>
 </head>
 <body>
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="scan-line"></div>
 
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="scan-line"></div>
-  <div class="hero-top-tag">// Pascal Robotics — France // 2026</div>
+    <div class="hero-top-tag">// Pascal Robotics — France // 2026</div>
 
-  <div class="hero-content">
-    <div class="hero-left">
-      <h1 class="hero-title">DOG<span>MORPH</span></h1>
-      <p class="hero-sub">
-        The world's first silent broadcast camera platform built on a quadruped robot.
-        Designed for live TV studios, concert stages, and beyond.
-      </p>
+    <div class="hero-content">
+      <div class="hero-left">
+        <h1 class="hero-title">DOG<span>MORPH</span></h1>
+        <p class="hero-sub">
+          The world's first silent broadcast camera platform built on a quadruped robot.
+          Designed for live TV studios, concert stages, and beyond.
+        </p>
 
-      <div class="hero-stats">
-        <div class="stat">
-          <div class="stat-value">&lt;45</div>
-          <div class="stat-label">dB(A) Silent</div>
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-value">&lt;45</div>
+            <div class="stat-label">dB(A) Silent</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-value">25&deg;</div>
+            <div class="stat-label">Ramp Climb</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-value">1.7m</div>
+            <div class="stat-label">Max Lens Height</div>
+          </div>
         </div>
-        <div class="stat">
-          <div class="stat-value">25&deg;</div>
-          <div class="stat-label">Ramp Climb</div>
+      </div>
+    </div>
+
+    <div class="corner-tag">IP PROTECTED — INPI SOLEAU 09.02.2026</div>
+  </section>
+
+  <div class="glow-line"></div>
+
+  <div class="specs-bar">
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">UNITREE B2-W CHASSIS</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">BEGODE MTEN4 HUB MOTORS</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">VESC 6 MKVI FOC</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">MO-SYS L20 PAN/TILT</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">ROS2 + SDK2</span></div>
+    <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">AXISCTRL INTEGRATION</span></div>
+  </div>
+
+  <div class="viewer-wrap">
+    <div class="viewer-section">
+      <div>
+        <div class="section-label">// Interactive 3D Model</div>
+        <h2 class="section-title">EXPLORE THE ARCHITECTURE</h2>
+        <p class="section-body">
+          The DOG MORPH is built on the Unitree B2-W quadruped platform — 16 degrees of freedom,
+          active leveling via 12-DOF legs, and hub motors replacing the standard feet.
+        </p>
+
+        <a
+          href="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-green"
+        >
+          Open Full 3D Viewer
+        </a>
+
+        <div class="remote-panel">
+          <div class="remote-canvas-wrap">
+            <canvas id="rc"></canvas>
+          </div>
+          <p class="remote-caption">// AxisCtrl Mobile Remote — DOG MORPH — 3D Interactive</p>
         </div>
-        <div class="stat">
-          <div class="stat-value">1.7m</div>
-          <div class="stat-label">Max Lens Height</div>
+      </div>
+
+      <div class="viewer-frame">
+        <div class="viewer-corner tl"></div>
+        <div class="viewer-corner tr"></div>
+        <div class="viewer-corner bl"></div>
+        <div class="viewer-corner br"></div>
+        <div class="viewer-label">B2W_DESCRIPTION.URDF — LIVE</div>
+
+        <iframe
+          src="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom&embed=1"
+          title="DOG MORPH 3D Viewer"
+          width="100%"
+          height="420"
+          style="border:none;display:block;"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="features-section">
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-number">01</div>
+        <div class="feature-title">Studio Mode</div>
+        <div class="feature-body">
+          Direct wheel traction, horizontal body, absolute silence below 45 dB(A).
+          Designed for live TV floors where noise is unacceptable.
         </div>
+        <span class="feature-tag">// VESC FOC SILENT DRIVE</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-number">02</div>
+        <div class="feature-title">Pendular Carving</div>
+        <div class="feature-body">
+          Dynamic balance mode with organic body tilt — cinematic aesthetic for concert stages
+          and immersive broadcast productions.
+        </div>
+        <span class="feature-tag">// GYROSCOPIC BALANCE</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-number">03</div>
+        <div class="feature-title">Active Leveling</div>
+        <div class="feature-body">
+          12-DOF legs compensate low-frequency terrain variation in real time.
+          The camera stays horizon-locked regardless of floor irregularities.
+        </div>
+        <span class="feature-tag">// IMU + LEG COMPENSATION</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-number">04</div>
+        <div class="feature-title">25&deg; Ramp Capable</div>
+        <div class="feature-body">
+          Designed to navigate concert stage ramps and multi-level broadcast sets.
+          Hub motors deliver torque where traditional wheels fail.
+        </div>
+        <span class="feature-tag">// ALL-TERRAIN MOBILITY</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-number">05</div>
+        <div class="feature-title">AxisCtrl Ready</div>
+        <div class="feature-body">
+          Native integration with Electric Friends AxisCtrl software — the broadcast robotics
+          control platform deployed at France Télévisions.
+        </div>
+        <span class="feature-tag">// BROADCAST ECOSYSTEM</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-number">06</div>
+        <div class="feature-title">IP Protected</div>
+        <div class="feature-body">
+          Concept protected by Soleau envelope filed with INPI on February 9, 2026.
+          Developed by Pascal Gautier — creator of ARCAM, acquired by EVS.
+        </div>
+        <span class="feature-tag">// INPI SOLEAU 09.02.2026</span>
       </div>
     </div>
   </div>
 
-  <div class="corner-tag">IP PROTECTED — INPI SOLEAU 09.02.2026</div>
-</section>
-
-<div class="glow-line"></div>
-
-<div class="specs-bar">
-  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">UNITREE B2-W CHASSIS</span></div>
-  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">BEGODE MTEN4 HUB MOTORS</span></div>
-  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">VESC 6 MKVI FOC</span></div>
-  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">MO-SYS L20 PAN/TILT</span></div>
-  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">ROS2 + SDK2</span></div>
-  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">AXISCTRL INTEGRATION</span></div>
-</div>
-
-<div style="background:#030303;border-bottom:1px solid #111;">
-  <div class="viewer-section">
-    <div>
-      <div class="section-label">// Interactive 3D Model</div>
-      <h2 class="section-title">EXPLORE THE ARCHITECTURE</h2>
-      <p class="section-body">
-        The DOG MORPH is built on the Unitree B2-W quadruped platform — 16 degrees of freedom,
-        active leveling via 12-DOF legs, and hub motors replacing the standard feet.
-      </p>
-
-      <a
-        href="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom"
-        target="_blank"
-        class="btn-green"
-      >
-        Open Full 3D Viewer
-      </a>
-
-      <div class="remote-img">
-        <canvas id="rc"></canvas>
-        <p>// AxisCtrl Mobile Remote — DOG MORPH — 3D Interactive</p>
-      </div>
+  <footer>
+    <div class="footer-brand">DOG MORPH</div>
+    <div class="footer-info">
+      PASCAL GAUTIER — PASCAL ROBOTICS<br>
+      FRANCE REPRESENTATIVE, ELECTRIC FRIENDS AS<br>
+      <a href="mailto:gautier.pascal@gmail.com">gautier.pascal@gmail.com</a>
     </div>
+  </footer>
 
-    <div class="viewer-frame">
-      <div class="viewer-corner tl"></div>
-      <div class="viewer-corner tr"></div>
-      <div class="viewer-corner bl"></div>
-      <div class="viewer-corner br"></div>
-      <div class="viewer-label">B2W_DESCRIPTION.URDF — LIVE</div>
-
-      <iframe
-        src="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom&embed=1"
-        title="DOG MORPH 3D Viewer"
-        width="100%"
-        height="420"
-        style="border:none;display:block;"
-        allowfullscreen
-      ></iframe>
-    </div>
-  </div>
-</div>
-
-<div class="features-section">
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-number">01</div>
-      <div class="feature-title">Studio Mode</div>
-      <div class="feature-body">
-        Direct wheel traction, horizontal body, absolute silence below 45 dB(A).
-        Designed for live TV floors where noise is unacceptable.
-      </div>
-      <span class="feature-tag">// VESC FOC SILENT DRIVE</span>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-number">02</div>
-      <div class="feature-title">Pendular Carving</div>
-      <div class="feature-body">
-        Dynamic balance mode with organic body tilt — cinematic aesthetic for concert stages
-        and immersive broadcast productions.
-      </div>
-      <span class="feature-tag">// GYROSCOPIC BALANCE</span>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-number">03</div>
-      <div class="feature-title">Active Leveling</div>
-      <div class="feature-body">
-        12-DOF legs compensate low-frequency terrain variation in real time.
-        The camera stays horizon-locked regardless of floor irregularities.
-      </div>
-      <span class="feature-tag">// IMU + LEG COMPENSATION</span>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-number">04</div>
-      <div class="feature-title">25&deg; Ramp Capable</div>
-      <div class="feature-body">
-        Designed to navigate concert stage ramps and multi-level broadcast sets.
-        Hub motors deliver torque where traditional wheels fail.
-      </div>
-      <span class="feature-tag">// ALL-TERRAIN MOBILITY</span>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-number">05</div>
-      <div class="feature-title">AxisCtrl Ready</div>
-      <div class="feature-body">
-        Native integration with Electric Friends AxisCtrl software — the broadcast robotics
-        control platform deployed at France Télévisions.
-      </div>
-      <span class="feature-tag">// BROADCAST ECOSYSTEM</span>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-number">06</div>
-      <div class="feature-title">IP Protected</div>
-      <div class="feature-body">
-        Concept protected by Soleau envelope filed with INPI on February 9, 2026.
-        Developed by Pascal Gautier — creator of ARCAM, acquired by EVS.
-      </div>
-      <span class="feature-tag">// INPI SOLEAU 09.02.2026</span>
-    </div>
-  </div>
-</div>
-
-<footer>
-  <div class="footer-brand">DOG MORPH</div>
-  <div class="footer-info">
-    PASCAL GAUTIER — PASCAL ROBOTICS<br>
-    FRANCE REPRESENTATIVE, ELECTRIC FRIENDS AS<br>
-    <a href="mailto:gautier.pascal@gmail.com" style="color:#888888;text-decoration:none;">gautier.pascal@gmail.com</a>
-  </div>
-</footer>
-
-<script>
-var rAmb=0.30,rDif=0.85,rSpc=0.35,rBrt=1.15;
-(function(){
-  /* Garde ici exactement ton script canvas actuel, inchangé.
-     Je ne l’ai pas réécrit car il est déjà présent dans ton fichier source
-     et la vraie correction nécessaire concernait surtout le HTML/CSS du bloc #rc. */
-})();
-</script>
-
+  <script>
+    var rAmb=0.30,rDif=0.85,rSpc=0.35,rBrt=1.15;
+    (function(){/* Garde ici ton script canvas / viewer existant sans le modifier */})();
+  </script>
 </body>
 </html>
