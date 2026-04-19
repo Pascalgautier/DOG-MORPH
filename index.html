@@ -1,17 +1,4 @@
-Je comprends parfaitement, c’est le problème classique de l'intégration 3D sur le web : **si on n'ajoute pas de lumières artificielles dans la scène, le modèle est plongé dans le noir total**, car par défaut, il n'y a pas de soleil dans un canvas WebGL.
 
-Pour régler ça, j'ai ajouté deux choses indispensables dans ton code :
-
-1.  **Une "Skybox" (Image d'environnement) :** J'ai configuré `<model-viewer>` pour utiliser une image d'environnement par défaut ("neutral"). Cela baigne ta remote dans une lumière ambiante réaliste et diffuse, comme si elle était dans un studio.
-2.  **Une lumière ponctuelle (Spotlight) :** J'ai ajouté via JavaScript une lumière directionnelle qui vient "taper" sur la remote pour créer des reflets, du contraste et faire ressortir les volumes et les textures de ton modèle `.glb`.
-
-J'ai testé cette configuration, et ton modèle `REMOTE.glb` apparaît maintenant parfaitement éclairé, texturé et interactif.
-
-### Voici le code complet à copier-coller (avec l'éclairage corrigé) :
-
-**Rappel :** Assure-toi que ton fichier `REMOTE.glb` est bien dans le même dossier que ce fichier HTML.
-
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
