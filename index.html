@@ -163,10 +163,16 @@
 
 <div style="background:#030303; border-top:1px solid #111; border-bottom:1px solid #111;">
   <div class="viewer-section">
-    <div>
-      <div class="section-label">// Interactive 3D Model</div>
-      <h2 class="section-title">EXPLORE THE REMOTE</h2>
-      <p class="section-body">The AxisCtrl remote — designed for broadcast robotics. Drag to rotate, scroll to zoom. Built for the DOG MORPH ecosystem deployed at France Télévisions.</p>
+    <div style="display:flex;flex-direction:column;gap:28px;">
+      <div>
+        <div class="section-label">// Interactive 3D Model</div>
+        <h2 class="section-title">EXPLORE THE REMOTE</h2>
+        <p class="section-body">The AxisCtrl remote — designed for broadcast robotics. Drag to rotate, scroll to zoom. Built for the DOG MORPH ecosystem deployed at France Télévisions.</p>
+      </div>
+      <div style="position:relative;width:100%;max-width:320px;">
+        <canvas id="radar-canvas" width="320" height="320" style="width:100%;max-width:320px;display:block;"></canvas>
+        <div style="margin-top:8px;font-family:&apos;Share Tech Mono&apos;,monospace;font-size:9px;color:#00ff41;letter-spacing:3px;opacity:0.5;">// AXISCTRL SIGNAL — LIVE</div>
+      </div>
     </div>
     <div class="viewer-frame" id="viewer-wrap" style="position:relative; background:#0a0a0a; border:1px solid #1a1a1a; min-height:420px;">
       <div class="viewer-corner tl"></div>
@@ -212,14 +218,15 @@
       const buffers = [bin];
       const bufferViews = json.bufferViews || [];
       const accessors = json.accessors || [];
-      const materials = (json.materials || []).map(m => {
-        const mat = new THREE.MeshStandardMaterial();
-        const pbr = m.pbrMetallicRoughness || {};
-        if (pbr.baseColorFactor) mat.color.setRGB(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2]);
-        mat.metalness = pbr.metallicFactor !== undefined ? pbr.metallicFactor : 1;
-        mat.roughness = pbr.roughnessFactor !== undefined ? pbr.roughnessFactor : 0.3;
-        return mat;
-      });
+      // Matériaux PBR broadcast forcés — ignore les couleurs GLB, applique anthracite métal
+      const broadcastMats = [
+        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.85, roughness: 0.25 }), // corps principal anthracite
+        new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.95, roughness: 0.15 }), // parties plastique noir
+        new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.70, roughness: 0.40 }), // grip mat
+        new THREE.MeshStandardMaterial({ color: 0x0a1a0a, metalness: 0.30, roughness: 0.60, emissive: new THREE.Color(0x001a00), emissiveIntensity: 0.4 }), // écran vert
+        new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.60, roughness: 0.50 }), // boutons
+      ];
+      const materials = (json.materials || []).map((m, i) => broadcastMats[i % broadcastMats.length]);
       const meshes = (json.meshes || []).map(mesh => {
         const g = new THREE.Group();
         (mesh.primitives || []).forEach(prim => {
@@ -246,7 +253,7 @@
               geo.setIndex(new THREE.BufferAttribute(idx, 1));
             }
             geo.computeVertexNormals();
-            const mat = materials[prim.material] || new THREE.MeshStandardMaterial({color:0x888888,metalness:0.8,roughness:0.3});
+            const mat = materials[prim.material] || new THREE.MeshStandardMaterial({color:0x1a1a1a, metalness:0.85, roughness:0.25});
             g.add(new THREE.Mesh(geo, mat));
           } catch(e) {}
         });
@@ -434,5 +441,154 @@
   <div class="footer-info">PASCAL GAUTIER — PASCAL ROBOTICS<br>FRANCE REPRESENTATIVE, ELECTRIC FRIENDS AS<br>gautier.pascal@gmail.com</div>
 </footer>
 
+
+<!-- ── RADAR ANIMATION ── -->
+<script>
+(function() {
+  const canvas = document.getElementById('radar-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = 320, H = 320, cx = W/2, cy = H/2, R = 140;
+
+  // Fixed blips
+  const blips = [
+    {a: 0.4,  r: 0.55, label: 'DOG MORPH', life: 1},
+    {a: 1.8,  r: 0.30, label: 'TF1 LCI',   life: 1},
+    {a: 2.9,  r: 0.70, label: 'CAM 02',    life: 1},
+    {a: 4.2,  r: 0.45, label: 'CAM 01',    life: 1},
+    {a: 5.5,  r: 0.80, label: 'DIRECTOR',  life: 1},
+    {a: 3.5,  r: 0.20, label: 'SOUND',     life: 1},
+  ];
+
+  let angle = 0;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(cx, cy, R+2, 0, Math.PI*2); ctx.fill();
+
+    // Glow sweep trail
+    const trailLen = Math.PI * 0.6;
+    const grad = ctx.createConicalGradient ? null : null;
+    for (let i = 0; i < 60; i++) {
+      const a = angle - (i / 60) * trailLen;
+      const alpha = (1 - i/60) * 0.18;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, a - 0.05, a + 0.05);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(0,255,65,${alpha})`;
+      ctx.fill();
+    }
+
+    // Sweep line
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    const lg = ctx.createLinearGradient(0, 0, R, 0);
+    lg.addColorStop(0, 'rgba(0,255,65,0)');
+    lg.addColorStop(0.6, 'rgba(0,255,65,0.4)');
+    lg.addColorStop(1, 'rgba(0,255,65,0.9)');
+    ctx.strokeStyle = lg;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(R, 0);
+    ctx.stroke();
+    ctx.restore();
+
+    // Grid circles
+    [0.25, 0.50, 0.75, 1.0].forEach(f => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * f, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,255,65,0.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // Grid cross lines
+    ctx.strokeStyle = 'rgba(0,255,65,0.10)';
+    ctx.lineWidth = 1;
+    [0, Math.PI/4, Math.PI/2, 3*Math.PI/4].forEach(a => {
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a)*R, cy + Math.sin(a)*R);
+      ctx.lineTo(cx - Math.cos(a)*R, cy - Math.sin(a)*R);
+      ctx.stroke();
+    });
+
+    // Outer ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(0,255,65,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Range labels
+    ctx.font = '8px monospace';
+    ctx.fillStyle = 'rgba(0,255,65,0.25)';
+    ctx.textAlign = 'left';
+    ['25M','50M','75M','100M'].forEach((t, i) => {
+      ctx.fillText(t, cx + R*(i+1)*0.25 + 3, cy - 3);
+    });
+
+    // Blips
+    blips.forEach(b => {
+      const diff = ((angle - b.a) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+      b.life = diff < 0.08 ? 1.0 : Math.max(0, b.life - 0.008);
+
+      const bx = cx + Math.cos(b.a) * R * b.r;
+      const by = cy + Math.sin(b.a) * R * b.r;
+      const alpha = b.life;
+
+      // Ping ring
+      if (b.life > 0.6) {
+        const pingR = (1 - b.life) * 20 + 4;
+        ctx.beginPath();
+        ctx.arc(bx, by, pingR, 0, Math.PI*2);
+        ctx.strokeStyle = `rgba(0,255,65,${(b.life-0.6)*1.5})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Core dot
+      ctx.beginPath();
+      ctx.arc(bx, by, 3.5, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(0,255,65,${alpha})`;
+      ctx.fill();
+
+      // Label
+      if (alpha > 0.2) {
+        ctx.font = `${Math.floor(7 + alpha)}px monospace`;
+        ctx.fillStyle = `rgba(0,255,65,${alpha * 0.8})`;
+        ctx.textAlign = 'left';
+        ctx.fillText(b.label, bx + 7, by + 4);
+      }
+    });
+
+    // Center dot
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3, 0, Math.PI*2);
+    ctx.fillStyle = '#00ff41';
+    ctx.fill();
+
+    // Corner HUD text
+    ctx.font = '8px monospace';
+    ctx.fillStyle = 'rgba(0,255,65,0.3)';
+    ctx.textAlign = 'left';
+    ctx.fillText('MORPH-01', cx - R + 4, cy - R + 14);
+    ctx.textAlign = 'right';
+    ctx.fillText('RANGE: 100M', cx + R - 4, cy - R + 14);
+    ctx.textAlign = 'left';
+    ctx.fillText('MODE: STUDIO', cx - R + 4, cy + R - 6);
+    ctx.textAlign = 'right';
+    const t = new Date();
+    ctx.fillText(t.toTimeString().slice(0,8), cx + R - 4, cy + R - 6);
+
+    angle = (angle + 0.02) % (Math.PI * 2);
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
 </body>
 </html>
