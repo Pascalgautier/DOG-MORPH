@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
   <style>
     :root {
       --green: #00ff41;
@@ -35,16 +37,23 @@
     /* Viewer Section */
     .viewer-section { padding: 40px 60px; max-width: 1400px; margin: 0 auto; }
     .rc-row { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
-    .rc-box { flex: 1; min-width: 320px; border: 1px solid #1a1a1a; background: #020202; overflow: hidden; position: relative; }
+    .rc-box { flex: 1; min-width: 320px; border: 1px solid #1a1a1a; background: #020202; overflow: hidden; position: relative; display: flex; flex-direction: column; }
     
-    #rc { width: 100%; height: 500px; display: block; touch-action: none; background: #000; }
+    /* 2. STYLES POUR LE VIEWER 3D */
+    model-viewer {
+      width: 100%;
+      height: 500px; /* Conserver la même hauteur que l'iframe */
+      background-color: #000;
+      --poster-color: transparent; /* Pour éviter un flash blanc au chargement */
+    }
+
     iframe { width: 100%; height: 500px; border: none; }
-    .rc-caption { padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #444; background: #050505; text-transform: uppercase; }
+    .rc-caption { padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #444; background: #050505; text-transform: uppercase; border-top: 1px solid #1a1a1a; }
 
     @media (max-width: 768px) {
         .hero { padding: 20px; min-height: 50vh; }
         .viewer-section { padding: 20px; }
-        #rc, iframe { height: 350px; }
+        model-viewer, iframe { height: 350px; }
     }
   </style>
 </head>
@@ -69,120 +78,27 @@
   <section class="viewer-section">
     <div class="rc-row">
       <div class="rc-box">
-        <canvas id="rc"></canvas>
-        <div class="rc-caption">// AxisCtrl Mobile — Real-time Monitoring</div>
+        <model-viewer 
+          src="REMOTE.glb" 
+          ar 
+          ar-modes="webxr scene-viewer quick-look" 
+          camera-controls 
+          tone-mapping="neutral" 
+          poster="poster.webp" 
+          shadow-intensity="1" 
+          auto-rotate>
+          <div class="progress-bar" slot="progress-bar">
+              <div class="update-bar"></div>
+          </div>
+        </model-viewer>
+        <div class="rc-caption">// AxisCtrl Mobile Remote — Interactive 3D Model</div>
       </div>
       <div class="rc-box">
         <iframe src="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom&embed=1"></iframe>
-        <div class="rc-caption">// Digital Twin — 3D Visualizer</div>
+        <div class="rc-caption">// Digital Twin — Dog Morph 3D Visualizer</div>
       </div>
     </div>
   </section>
 
-  <script>
-    (function() {
-      const canvas = document.getElementById('rc');
-      const ctx = canvas.getContext('2d');
-      let W, H, dpr, t = 0;
-      const mouse = { x: 0.5, y: 0.5, active: false };
-
-      function resize() {
-        const rect = canvas.getBoundingClientRect();
-        dpr = window.devicePixelRatio || 1;
-        W = rect.width;
-        H = rect.height;
-        canvas.width = W * dpr;
-        canvas.height = H * dpr;
-        ctx.scale(dpr, dpr);
-      }
-
-      // --- TES FONCTIONS DE DESSIN ORIGINALES (RÉPARÉES) ---
-      function roundedRect(x, y, w, h, r) {
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
-      }
-
-      function meter(x, y, w, h, fill, label) {
-        ctx.fillStyle = 'rgba(0,255,65,0.1)';
-        roundedRect(x, y, w, h, 3); ctx.fill();
-        ctx.fillStyle = '#00ff41';
-        roundedRect(x, y, w * fill, h, 3); ctx.fill();
-        ctx.font = '9px "Share Tech Mono"';
-        ctx.fillText(label, x, y - 5);
-      }
-
-      function draw() {
-        ctx.clearRect(0, 0, W, H);
-
-        // Fond & Grille
-        ctx.strokeStyle = 'rgba(0,255,65,0.05)';
-        for(let i=0; i<W; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,H); ctx.stroke(); }
-
-        // Joystick
-        const cx = W/2, cy = H/2, r = Math.min(W, H) * 0.25;
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
-        ctx.strokeStyle = 'rgba(0,255,65,0.2)'; ctx.stroke();
-        
-        let jx = cx, jy = cy;
-        if(mouse.active) {
-            jx = cx + (mouse.x - 0.5) * r * 1.8;
-            jy = cy + (mouse.y - 0.5) * r * 1.8;
-        } else {
-            jx = cx + Math.sin(t*0.02) * 20;
-            jy = cy + Math.cos(t*0.02) * 20;
-        }
-
-        ctx.fillStyle = '#00ff41';
-        ctx.beginPath(); ctx.arc(jx, jy, 15, 0, Math.PI*2); ctx.fill();
-
-        // Meters
-        meter(20, H - 60, 120, 8, 0.8 + Math.sin(t*0.01)*0.1, "BATTERY");
-        meter(20, H - 30, 120, 8, 0.4 + Math.cos(t*0.02)*0.2, "SIGNAL");
-
-        // Status
-        ctx.fillStyle = '#00ff41';
-        ctx.font = '11px "Share Tech Mono"';
-        ctx.fillText("// SYSTEM OK", 20, 30);
-        ctx.globalAlpha = Math.sin(t*0.1) > 0 ? 1 : 0.3;
-        ctx.fillText("● LIVE DATA", W - 100, 30);
-        ctx.globalAlpha = 1;
-
-        t += 1;
-        requestAnimationFrame(draw);
-      }
-
-      // --- GESTION TACTILE MOBILE CRITIQUE ---
-      function handleMove(e) {
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-        if(clientX && clientY) {
-            mouse.x = (clientX - rect.left) / W;
-            mouse.y = (clientY - rect.top) / H;
-        }
-      }
-
-      canvas.addEventListener('pointerdown', (e) => { mouse.active = true; handleMove(e); });
-      window.addEventListener('pointerup', () => { mouse.active = false; });
-      canvas.addEventListener('pointermove', handleMove);
-      
-      // Prevent scrolling while touching joystick
-      canvas.addEventListener('touchstart', (e) => { mouse.active = true; handleMove(e); }, {passive: false});
-      canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, {passive: false});
-
-      window.addEventListener('resize', resize);
-      resize();
-      draw();
-    })();
-  </script>
-</body>
+  </body>
 </html>
