@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- v20260419152808 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -28,9 +29,6 @@
     .stat { display: flex; flex-direction: column; }
     .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--green); line-height: 1; }
     .stat-label { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: #aaa; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
-    .hero-cta { display: flex; gap: 16px; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.8s ease forwards 1s; }
-    .btn-green { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: var(--green); color: #000; font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 2px; text-decoration: none; font-weight: 700; transition: all 0.2s; }
-    .btn-green:hover { background: #00cc33; transform: translateY(-2px); }
     .corner-tag { position: absolute; bottom: 32px; right: 60px; font-family: 'Share Tech Mono', monospace; font-size: 9px; color: #333; letter-spacing: 3px; text-transform: uppercase; z-index: 10; }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -84,7 +82,7 @@
       .hero { padding-top: 0; min-height: 100svh; align-items: stretch; justify-content: flex-start; padding-bottom: 0; flex-direction: column; }
       .hero-top-tag { left: 20px; top: 16px; font-size: 9px; letter-spacing: 2px; position: absolute; }
       .hero-content { padding: 0 20px 20px; margin-top: auto; }
-      .hero-left { max-width: 100%; gap: 8px; } .hero-cta .btn-green { font-size: 10px; padding: 8px 16px; letter-spacing: 1px; } .hero-cta { display: none; }
+      .hero-left { max-width: 100%; gap: 8px; }
       .hero-title { font-size: clamp(28px, 8vw, 44px); letter-spacing: -1px; }
       .hero-sub { font-size: 12px; max-width: 100%; color: #ffffff; }
       .hero-stats { gap: 20px; }
@@ -132,9 +130,6 @@
         <div class="stat"><div class="stat-value">0</div><div class="stat-label">dB Studio Mode</div></div>
         <div class="stat"><div class="stat-value">45°</div><div class="stat-label">Max Slope</div></div>
         <div class="stat"><div class="stat-value">AI</div><div class="stat-label">Neural RL Stealth</div></div>
-      </div>
-      <div class="hero-cta">
-        <a href="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom" target="_blank" class="btn-green">View in 3D</a>
       </div>
     </div>
   </div>
