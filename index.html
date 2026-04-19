@@ -1,121 +1,226 @@
-
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DOG MORPH — AxisCtrl Remote 3D</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOG MORPH — Broadcast Quadruped Robot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --green: #00ff41;
-      --dark: #000000;
-      --text: #cccccc;
-    }
+    :root { --green: #00ff41; --dark: #000000; --text: #cccccc; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-x: hidden; }
+    body { background: var(--dark); color: var(--text); font-family: 'Rajdhani', sans-serif; overflow-x: hidden; width: 100%; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
-    body { background: var(--dark); color: var(--text); font-family: 'Rajdhani', sans-serif; overflow-x: hidden; }
+    /* ── HERO ── */
+    .hero { position: relative; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; overflow: hidden; padding-top: 80px; }
+    .hero-bg { position: absolute; inset: 0; background: url('DOG_MORPH_HD.jpg') center/cover no-repeat; z-index: 1; }
+    .hero-overlay { position: absolute; inset: 0; z-index: 2; background: linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0.1) 100%); }
+    .scan-line { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.015) 2px, rgba(0,255,65,0.015) 4px); pointer-events: none; animation: scan 8s linear infinite; z-index: 3; }
+    @keyframes scan { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
 
-    /* Hero Section */
-    .hero { position: relative; min-height: 80vh; display: flex; align-items: center; padding: 40px 60px; overflow: hidden; }
-    .hero-bg { position: absolute; inset: 0; background: linear-gradient(to right, #000 30%, transparent), url('DOG_MORPH_HD.jpg') center/cover no-repeat; z-index: 1; opacity: 0.6; }
-    .hero-content { position: relative; z-index: 10; max-width: 800px; }
-    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(50px, 10vw, 120px); line-height: 0.9; color: white; }
-    .hero-title span { color: var(--green); }
+    .hero-top-tag { position: absolute; top: 32px; left: 60px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--green); letter-spacing: 4px; text-transform: uppercase; z-index: 10; }
+    .hero-content { position: relative; z-index: 10; width: 100%; max-width: 1400px; padding: 0 60px 80px; }
+    .hero-left { display: flex; flex-direction: column; gap: 24px; max-width: 600px; }
+    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(80px, 10vw, 140px); line-height: 0.9; color: white; letter-spacing: -2px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s; }
+    .hero-title span { color: var(--green); display: block; }
+    .hero-sub { font-size: 16px; font-weight: 300; color: #aaa; line-height: 1.6; max-width: 420px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s; }
+    .hero-stats { display: flex; gap: 32px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s; }
+    .stat { display: flex; flex-direction: column; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--green); line-height: 1; }
+    .stat-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+    .hero-cta { display: flex; gap: 16px; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.8s ease forwards 1s; }
+    .btn-green { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: var(--green); color: #000; font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 2px; text-decoration: none; font-weight: 700; transition: all 0.2s; }
+    .btn-green:hover { background: #00cc33; transform: translateY(-2px); }
+    .corner-tag { position: absolute; bottom: 32px; right: 60px; font-family: 'Share Tech Mono', monospace; font-size: 9px; color: #333; letter-spacing: 3px; text-transform: uppercase; z-index: 10; }
 
-    /* Specs bar */
-    .specs-bar { display: flex; overflow-x: auto; padding: 20px; background: #050505; border-bottom: 1px solid #111; gap: 30px; scrollbar-width: none; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── GLOW LINE ── */
+    .glow-line { height: 1px; background: linear-gradient(90deg, transparent, var(--green), transparent); }
+
+    /* ── SPECS BAR ── */
+    .specs-bar { display: flex; align-items: center; padding: 20px 60px; border-bottom: 1px solid #111; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     .specs-bar::-webkit-scrollbar { display: none; }
-    .spec-item { display: flex; align-items: center; gap: 10px; white-space: nowrap; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #555; }
-    .spec-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+    .spec-item { display: flex; align-items: center; gap: 12px; padding: 0 32px; border-right: 1px solid #1a1a1a; flex-shrink: 0; }
+    .spec-item:first-child { padding-left: 0; }
+    .spec-item:last-child { border-right: none; }
+    .spec-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
+    .spec-text { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #555; letter-spacing: 2px; }
 
-    /* Viewer Section */
-    .viewer-section { padding: 40px 60px; max-width: 1400px; margin: 0 auto; }
-    .rc-row { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
-    .rc-box { flex: 1; min-width: 320px; border: 1px solid #1a1a1a; background: #020202; overflow: hidden; position: relative; display: flex; flex-direction: column; }
-    
-    /* 2. STYLES CORRIGÉS POUR LE VIEWER 3D */
-    model-viewer {
-      width: 100%;
-      height: 500px;
-      background-color: #000; /* Fond noir pour le viewer */
-      --poster-color: transparent;
+    /* ── VIEWER SECTION ── */
+    .viewer-section { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; padding: 100px 60px; max-width: 1400px; margin: 0 auto; align-items: center; }
+    .section-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--green); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 5vw, 72px); color: white; line-height: 1; margin-bottom: 20px; }
+    .section-body { font-size: 15px; font-weight: 300; color: #888; line-height: 1.7; margin-bottom: 32px; }
+    .viewer-frame { position: relative; background: #0a0a0a; border: 1px solid #1a1a1a; }
+    .viewer-corner { position: absolute; width: 12px; height: 12px; border-color: var(--green); border-style: solid; z-index: 2; }
+    .viewer-corner.tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .viewer-corner.tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+    .viewer-corner.bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+    .viewer-corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+    .viewer-label { position: absolute; top: 8px; left: 12px; font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--green); letter-spacing: 2px; z-index: 2; opacity: 0.6; }
+    .viewer-frame iframe { width: 100%; height: 420px; border: none; display: block; }
+
+    /* ── FEATURES ── */
+    .features-section { padding: 100px 60px; max-width: 1400px; margin: 0 auto; }
+    .features-header { margin-bottom: 60px; }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #111; }
+    .feature-card { background: #000; padding: 40px 32px; border: 1px solid #111; transition: border-color 0.3s; }
+    .feature-card:hover { border-color: #222; }
+    .feature-number { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: #1a1a1a; line-height: 1; margin-bottom: 12px; }
+    .feature-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: white; margin-bottom: 12px; }
+    .feature-body { font-size: 14px; font-weight: 300; color: #666; line-height: 1.7; margin-bottom: 16px; }
+    .feature-tag { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--green); letter-spacing: 2px; opacity: 0.7; }
+
+    /* ── FOOTER ── */
+    footer { display: flex; justify-content: space-between; align-items: center; padding: 32px 60px; border-top: 1px solid #111; }
+    .footer-brand { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--green); letter-spacing: 4px; }
+    .footer-info { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #333; letter-spacing: 2px; text-align: right; line-height: 1.8; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .hero { padding-top: 64px; }
+      .hero-top-tag { left: 20px; top: 20px; font-size: 9px; letter-spacing: 2px; }
+      .hero-content { padding: 0 20px 80px; }
+      .hero-left { max-width: 100%; }
+      .hero-title { font-size: clamp(64px, 18vw, 90px); }
+      .hero-sub { font-size: 15px; max-width: 100%; color: #ccc; }
+      .hero-stats { gap: 20px; }
+      .stat-value { font-size: 30px; }
+      .corner-tag { display: none; }
+      .hero-overlay { background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.65) 100%); }
+
+      .specs-bar { padding: 16px 20px; gap: 0; }
+      .spec-item { padding: 0 20px; }
+      .spec-item:first-child { padding-left: 0; }
+
+      .viewer-section { grid-template-columns: 1fr; padding: 60px 20px; gap: 40px; }
+      .viewer-frame iframe { height: 280px; }
+
+      .features-section { padding: 60px 20px; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .feature-card { padding: 28px 16px; }
+      .feature-number { font-size: 32px; }
+      .feature-title { font-size: 20px; }
+
+      footer { padding: 32px 20px; flex-direction: column; align-items: flex-start; gap: 12px; }
+      .footer-info { text-align: left; }
     }
 
-    iframe { width: 100%; height: 500px; border: none; }
-    .rc-caption { padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #444; background: #050505; text-transform: uppercase; border-top: 1px solid #1a1a1a; }
-
-    @media (max-width: 768px) {
-        .hero { padding: 20px; min-height: 50vh; }
-        .viewer-section { padding: 20px; }
-        model-viewer, iframe { height: 350px; }
+    @media (max-width: 480px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .section-title { font-size: 38px; }
     }
   </style>
 </head>
 <body>
 
-  <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-content">
-      <div style="font-family:'Share Tech Mono'; color:var(--green); font-size:11px; margin-bottom:15px;">// PASCAL ROBOTICS — 2026</div>
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="scan-line"></div>
+  <div class="hero-top-tag">// Pascal Robotics — France // 2026</div>
+  <div class="hero-content">
+    <div class="hero-left">
       <h1 class="hero-title">DOG<span>MORPH</span></h1>
-      <p style="margin-top:20px; max-width:400px; font-weight:600;">Broadcast Quadruped Platform. Silent Inmotion Drive. AxisCtrl Integrated.</p>
+      <p class="hero-sub">The world's first silent broadcast camera platform built on a quadruped robot. Designed for live TV studios, concert stages, and beyond.</p>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-value">&lt;45</div><div class="stat-label">dB(A) Silent</div></div>
+        <div class="stat"><div class="stat-value">25°</div><div class="stat-label">Ramp Climb</div></div>
+        <div class="stat"><div class="stat-value">1.7m</div><div class="stat-label">Max Lens Height</div></div>
+      </div>
+      <div class="hero-cta">
+        <a href="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom" target="_blank" class="btn-green">View in 3D</a>
+      </div>
     </div>
-  </section>
-
-  <div class="specs-bar">
-    <div class="spec-item"><div class="spec-dot"></div>UNITREE B2-W</div>
-    <div class="spec-item"><div class="spec-dot"></div>HUB MOTORS V12</div>
-    <div class="spec-item"><div class="spec-dot"></div>VESC 6 FOC SILENT</div>
-    <div class="spec-item"><div class="spec-dot"></div>EF REPRESENTATIVE</div>
   </div>
+  <div class="corner-tag">IP PROTECTED — INPI SOLEAU 09.02.2026</div>
+</section>
 
-  <section class="viewer-section">
-    <div class="rc-row">
-      <div class="rc-box">
-        <model-viewer 
-          id="remoteViewer"
-          src="REMOTE.glb" 
-          ar 
-          ar-modes="webxr scene-viewer quick-look" 
-          camera-controls 
-          tone-mapping="neutral" 
-          shadow-intensity="1" 
-          environment-image="neutral"
-          auto-rotate>
-        </model-viewer>
-        <div class="rc-caption">// AxisCtrl Mobile Remote — Interactive 3D Model</div>
-      </div>
-      <div class="rc-box">
-        <iframe src="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom&embed=1"></iframe>
-        <div class="rc-caption">// Digital Twin — Dog Morph 3D Visualizer</div>
-      </div>
+<div class="glow-line"></div>
+
+<!-- ── SPECS BAR ── -->
+<div class="specs-bar">
+  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">UNITREE B2-W CHASSIS</span></div>
+  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">BEGODE MTEN4 HUB MOTORS</span></div>
+  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">VESC 6 MKVI FOC</span></div>
+  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">SHOTOVER G1 GIMBAL</span></div>
+  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">ROS2 + SDK2</span></div>
+  <div class="spec-item"><div class="spec-dot"></div><span class="spec-text">AXISCTRL INTEGRATION</span></div>
+</div>
+
+<!-- ── 3D VIEWER ── -->
+<div style="background:#030303; border-top:1px solid #111; border-bottom:1px solid #111;">
+  <div class="viewer-section">
+    <div>
+      <div class="section-label">// Interactive 3D Model</div>
+      <h2 class="section-title">EXPLORE THE ARCHITECTURE</h2>
+      <p class="section-body">The DOG MORPH is built on the Unitree B2-W quadruped platform — 16 degrees of freedom, active leveling via 12-DOF legs, and hub motors replacing the standard feet.</p>
+      <a href="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom" target="_blank" class="btn-green">Open Full 3D Viewer</a>
     </div>
-  </section>
+    <div class="viewer-frame">
+      <div class="viewer-corner tl"></div>
+      <div class="viewer-corner tr"></div>
+      <div class="viewer-corner bl"></div>
+      <div class="viewer-corner br"></div>
+      <div class="viewer-label">B2W_DESCRIPTION.URDF — LIVE</div>
+      <iframe src="https://robosynx.com/visualize/560d7a42-3403-488b-a4c4-30f4ecaaa6b8?policy=custom" allowfullscreen loading="lazy"></iframe>
+    </div>
+  </div>
+</div>
 
-  <script>
-    const viewer = document.querySelector('#remoteViewer');
-    
-    viewer.addEventListener('load', () => {
-      const scene = viewer.modelScene;
-      
-      // Création d'une lumière spot directionnelle pour le contraste
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-      directionalLight.position.set(1, 1, 1); // Positionnée en haut à droite devant
-      scene.add(directionalLight);
-      
-      // Création d'une lumière ambiante douce pour déboucher les ombres
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      scene.add(ambientLight);
-    });
-  </script>
+<!-- ── FEATURES ── -->
+<div class="features-section">
+  <div class="features-header">
+    <div class="section-label">// System Capabilities</div>
+    <h2 class="section-title">ENGINEERED FOR BROADCAST</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-number">01</div>
+      <div class="feature-title">Studio Mode</div>
+      <div class="feature-body">Direct wheel traction, horizontal body, absolute silence below 45 dB(A). Designed for live TV floors where noise is unacceptable.</div>
+      <span class="feature-tag">// VESC FOC SILENT DRIVE</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-number">02</div>
+      <div class="feature-title">Pendular Carving</div>
+      <div class="feature-body">Dynamic balance mode with organic body tilt — cinematic aesthetic for concert stages and immersive broadcast productions.</div>
+      <span class="feature-tag">// GYROSCOPIC BALANCE</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-number">03</div>
+      <div class="feature-title">Active Leveling</div>
+      <div class="feature-body">12-DOF legs compensate low-frequency terrain variation in real time. The camera stays horizon-locked regardless of floor irregularities.</div>
+      <span class="feature-tag">// IMU + LEG COMPENSATION</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-number">04</div>
+      <div class="feature-title">25° Ramp Capable</div>
+      <div class="feature-body">Designed to navigate concert stage ramps and multi-level broadcast sets. Hub motors deliver torque where traditional wheels fail.</div>
+      <span class="feature-tag">// ALL-TERRAIN MOBILITY</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-number">05</div>
+      <div class="feature-title">AxisCtrl Ready</div>
+      <div class="feature-body">Native integration with Electric Friends AxisCtrl software — the broadcast robotics control platform deployed at France Télévisions.</div>
+      <span class="feature-tag">// BROADCAST ECOSYSTEM</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-number">06</div>
+      <div class="feature-title">IP Protected</div>
+      <div class="feature-body">Concept protected by Soleau envelope filed with INPI on February 9, 2026. Developed by Pascal Gautier — creator of ARCAM, acquired by EVS.</div>
+      <span class="feature-tag">// INPI SOLEAU 09.02.2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-brand">DOG MORPH</div>
+  <div class="footer-info">PASCAL GAUTIER — PASCAL ROBOTICS<br>FRANCE REPRESENTATIVE, ELECTRIC FRIENDS AS<br>gautier.pascal@gmail.com</div>
+</footer>
 
 </body>
 </html>
-```
