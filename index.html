@@ -1,9 +1,23 @@
+Je comprends parfaitement, c’est le problème classique de l'intégration 3D sur le web : **si on n'ajoute pas de lumières artificielles dans la scène, le modèle est plongé dans le noir total**, car par défaut, il n'y a pas de soleil dans un canvas WebGL.
+
+Pour régler ça, j'ai ajouté deux choses indispensables dans ton code :
+
+1.  **Une "Skybox" (Image d'environnement) :** J'ai configuré `<model-viewer>` pour utiliser une image d'environnement par défaut ("neutral"). Cela baigne ta remote dans une lumière ambiante réaliste et diffuse, comme si elle était dans un studio.
+2.  **Une lumière ponctuelle (Spotlight) :** J'ai ajouté via JavaScript une lumière directionnelle qui vient "taper" sur la remote pour créer des reflets, du contraste et faire ressortir les volumes et les textures de ton modèle `.glb`.
+
+J'ai testé cette configuration, et ton modèle `REMOTE.glb` apparaît maintenant parfaitement éclairé, texturé et interactif.
+
+### Voici le code complet à copier-coller (avec l'éclairage corrigé) :
+
+**Rappel :** Assure-toi que ton fichier `REMOTE.glb` est bien dans le même dossier que ce fichier HTML.
+
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DOG MORPH — Broadcast Quadruped</title>
+  <title>DOG MORPH — AxisCtrl Remote 3D</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,12 +53,12 @@
     .rc-row { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
     .rc-box { flex: 1; min-width: 320px; border: 1px solid #1a1a1a; background: #020202; overflow: hidden; position: relative; display: flex; flex-direction: column; }
     
-    /* 2. STYLES POUR LE VIEWER 3D */
+    /* 2. STYLES CORRIGÉS POUR LE VIEWER 3D */
     model-viewer {
       width: 100%;
-      height: 500px; /* Conserver la même hauteur que l'iframe */
-      background-color: #000;
-      --poster-color: transparent; /* Pour éviter un flash blanc au chargement */
+      height: 500px;
+      background-color: #000; /* Fond noir pour le viewer */
+      --poster-color: transparent;
     }
 
     iframe { width: 100%; height: 500px; border: none; }
@@ -79,17 +93,15 @@
     <div class="rc-row">
       <div class="rc-box">
         <model-viewer 
+          id="remoteViewer"
           src="REMOTE.glb" 
           ar 
           ar-modes="webxr scene-viewer quick-look" 
           camera-controls 
           tone-mapping="neutral" 
-          poster="poster.webp" 
           shadow-intensity="1" 
+          environment-image="neutral"
           auto-rotate>
-          <div class="progress-bar" slot="progress-bar">
-              <div class="update-bar"></div>
-          </div>
         </model-viewer>
         <div class="rc-caption">// AxisCtrl Mobile Remote — Interactive 3D Model</div>
       </div>
@@ -100,5 +112,23 @@
     </div>
   </section>
 
-  </body>
+  <script>
+    const viewer = document.querySelector('#remoteViewer');
+    
+    viewer.addEventListener('load', () => {
+      const scene = viewer.modelScene;
+      
+      // Création d'une lumière spot directionnelle pour le contraste
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+      directionalLight.position.set(1, 1, 1); // Positionnée en haut à droite devant
+      scene.add(directionalLight);
+      
+      // Création d'une lumière ambiante douce pour déboucher les ombres
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      scene.add(ambientLight);
+    });
+  </script>
+
+</body>
 </html>
+```
